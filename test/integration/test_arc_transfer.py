@@ -4,9 +4,6 @@ from omero.gateway import BlitzGateway
 from omero.model import MapAnnotationI, NamedValue
 from omero.rtypes import rstring
 
-# from omero.model.internal import NamedValueI
-import omero
-
 
 class TestArcTransfer(CLITest):
     def setup_method(self, method):
@@ -15,30 +12,6 @@ class TestArcTransfer(CLITest):
         self.args += ["transfer"]
         self.gw = BlitzGateway(client_obj=self.client)
         self.session = self.client.getSessionId()
-
-    def new_mapped_annotation(self, name=None, namespace=None):
-        """
-        Creates a new tag object.
-        :param name: The tag name. If None, a UUID string will be used
-        :param ns: The namespace for the annotation. If None, do not set.
-        """
-        map_annotation = self.new_object(MapAnnotationI, name=name)
-        # map_annotation = omero.gateway.MapAnnotationWrapper(self.gw)
-        map_annotation.setMapValue([NamedValue("key1", "1"), NamedValue("key2", "2")])
-        self.client.sf.getUpdateService().saveAndReturnObject(map_annotation)
-        project = self.make_project(
-            client=self.client, name="my project", description="a Test project"
-        )
-        tag = self.make_tag(name="mytag")
-        # self.link(obj1=project, obj2=tag)
-        # self.link(obj1=project, obj2=map_annotation)
-        # project.linkAnnotation(tag)
-        # project.linkAnnotation(map_annotation)
-
-        self.link(project, map_annotation)
-        self.link(project, tag)
-
-        pass
 
     def create_mapped_annotation(
         self, name=None, map_values=None, namespace=None, parent_object=None
