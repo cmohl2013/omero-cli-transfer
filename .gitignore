@@ -42,6 +42,18 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+
+test/data/incomplete_project/
+test/data/simple_plate/
+test/data/simple_screen/
+test/data/valid_single_dataset/
+test/data/valid_single_project/
+test/data/valid_single_image/
+test/integration/ice.config
+test/data/prepare/transfer.xml
+
+
+tmp_folder/
 htmlcov/
 .tox/
 .nox/
