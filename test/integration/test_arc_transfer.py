@@ -1,11 +1,12 @@
 from cli import CLITest
+from test_transfer import TestTransfer
 from omero_cli_transfer import TransferControl
 from omero.gateway import BlitzGateway
 from omero.model import MapAnnotationI, NamedValue
 from omero.rtypes import rstring
 
 
-class TestArcTransfer(CLITest):
+class TestArcTransfer(TestTransfer):
     def setup_method(self, method):
         super(TestArcTransfer, self).setup_method(method)
         self.cli.register("transfer", TransferControl, "TEST")
@@ -32,6 +33,31 @@ class TestArcTransfer(CLITest):
             self.link(parent_object, map_annotation)
 
         return map_annotation
+
+    def test_pack_arc(self, tmp_path):
+        project_1 = self.make_project(name="study_1")
+        dataset_1 = self.make_dataset(name="assay_1")
+        dataset_2 = self.make_dataset(name="assay_2")
+
+        self.link(project_1, dataset_1)
+        self.link(project_1, dataset_2)
+
+        for _ in range(3):
+            image = self.create_test_image(100, 100, 1, 1, 1, self.client.getSession())
+            self.link(dataset_1, image)
+
+        for _ in range(2):
+            image = self.create_test_image(150, 150, 3, 1, 1, self.client.getSession())
+            self.link(dataset_2, image)
+
+        project_identifier = f"Project:{project_1.id._val}"
+        path_to_arc = tmp_path / "my_arc.tar"
+        args = self.args[:8] + ["pack", "--arc", project_identifier, str(path_to_arc)]
+        self.cli.invoke(args)
+
+        assert path_to_arc.exists()
+        assert (path_to_arc / "assays").exists()
+        assert (path_to_arc / "studies").exists()
 
     def test_annotation(self):
         print(self.login_args())
