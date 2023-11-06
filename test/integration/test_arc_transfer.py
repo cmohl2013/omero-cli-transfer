@@ -1,6 +1,5 @@
 from cli import CLITest
 from omero_cli_transfer import TransferControl
-from omero.gateway import BlitzGateway
 from omero.model import MapAnnotationI, NamedValue
 from omero.rtypes import rstring
 from pathlib import Path

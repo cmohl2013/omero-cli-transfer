@@ -17,3 +17,24 @@ class ArcPacker(object):
             xmldata = f.read()
 
         self.ome = from_xml(xmldata)
+
+    def create_investigation(self):
+        assert self.ome is not None
+
+        investigation_title = "Test Investigation 1"
+        investigation_identifier = investigation_title.lower().replace(
+            " ", "-"
+        )
+
+        subprocess.run(
+            [
+                "arc",
+                "investigation",
+                "create",
+                "--identifier",
+                investigation_identifier,
+                "--title",
+                investigation_title,
+            ],
+            cwd=self.folder,
+        )
