@@ -1,4 +1,4 @@
-from test_transfer import TestTransfer
+from cli import CLITest
 from omero_cli_transfer import TransferControl
 from omero.gateway import BlitzGateway
 from omero.model import MapAnnotationI, NamedValue
@@ -8,9 +8,12 @@ import os
 import pytest
 
 
-class TestArcTransfer(TestTransfer):
+class TestArcTransfer(CLITest):
     def setup_method(self, method):
         super(TestArcTransfer, self).setup_method(method)
+        self.cli.register("transfer", TransferControl, "TEST")
+        self.args += ["transfer"]
+
         self.session = self.client.getSessionId()
 
     def create_mapped_annotation(
@@ -104,13 +107,20 @@ class TestArcTransfer(TestTransfer):
 
         if request.config.option.create_arc_test_data:
             project_identifier = f"Project:{project_1.id._val}"
+            path_to_arc_test_dataset_1 = path_to_arc_test_data / "project_1"
             args = self.args + [
                 "pack",
-                "--simple",
                 project_identifier,
-                str(path_to_arc_test_data / "project_1"),
+                str(path_to_arc_test_dataset_1),
             ]
             self.cli.invoke(args)
+            import tarfile
+
+            with tarfile.open(
+                path_to_arc_test_dataset_1.with_suffix(".tar")
+            ) as f:
+                f.extractall(path_to_arc_test_dataset_1)
+            os.remove(path_to_arc_test_dataset_1.with_suffix(".tar"))
 
     def test_annotation(self):
         print(self.login_args())
