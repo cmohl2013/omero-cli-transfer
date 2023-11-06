@@ -3,15 +3,14 @@ from omero_cli_transfer import TransferControl
 from omero.gateway import BlitzGateway
 from omero.model import MapAnnotationI, NamedValue
 from omero.rtypes import rstring
+from pathlib import Path
+import os
 import pytest
 
 
 class TestArcTransfer(TestTransfer):
     def setup_method(self, method):
         super(TestArcTransfer, self).setup_method(method)
-        self.cli.register("transfer", TransferControl, "TEST")
-        self.args += ["transfer"]
-        self.gw = BlitzGateway(client_obj=self.client)
         self.session = self.client.getSessionId()
 
     def create_mapped_annotation(
@@ -72,7 +71,7 @@ class TestArcTransfer(TestTransfer):
         # only projects can be packed as arc
         dataset_identifier = f"Dataset:{dataset_1.id._val}"
         path_to_arc = tmp_path / "my_arc"
-        args = self.args[:8] + [
+        args = self.args + [
             "pack",
             "--arc",
             dataset_identifier,
@@ -85,7 +84,7 @@ class TestArcTransfer(TestTransfer):
     def test_pack_arc(self, project_1, tmp_path):
         project_identifier = f"Project:{project_1.id._val}"
         path_to_arc = tmp_path / "my_arc"
-        args = self.args[:8] + [
+        args = self.args + [
             "pack",
             "--arc",
             project_identifier,
@@ -96,6 +95,22 @@ class TestArcTransfer(TestTransfer):
         assert path_to_arc.exists()
         assert (path_to_arc / "assays").exists()
         assert (path_to_arc / "studies").exists()
+
+    def test_create_arc_test_data(self, project_1, request):
+        path_to_arc_test_data = (
+            Path(__file__).parent.parent / "data/arc_test_data"
+        )
+        os.makedirs(path_to_arc_test_data, exist_ok=True)
+
+        if request.config.option.create_arc_test_data:
+            project_identifier = f"Project:{project_1.id._val}"
+            args = self.args + [
+                "pack",
+                "--simple",
+                project_identifier,
+                str(path_to_arc_test_data / "project_1"),
+            ]
+            self.cli.invoke(args)
 
     def test_annotation(self):
         print(self.login_args())
