@@ -1,9 +1,9 @@
-from cli import CLITest
 from test_transfer import TestTransfer
 from omero_cli_transfer import TransferControl
 from omero.gateway import BlitzGateway
 from omero.model import MapAnnotationI, NamedValue
 from omero.rtypes import rstring
+import pytest
 
 
 class TestArcTransfer(TestTransfer):
@@ -20,7 +20,8 @@ class TestArcTransfer(TestTransfer):
         map_annotation = self.new_object(MapAnnotationI, name=name)
         if map_values is not None:
             map_value_ls = [
-                NamedValue(str(key), str(map_values[key])) for key in map_values
+                NamedValue(str(key), str(map_values[key]))
+                for key in map_values
             ]
             map_annotation.setMapValue(map_value_ls)
         if namespace is not None:
@@ -34,25 +35,62 @@ class TestArcTransfer(TestTransfer):
 
         return map_annotation
 
-    def test_pack_arc(self, tmp_path):
-        project_1 = self.make_project(name="study_1")
+    @pytest.fixture()
+    def dataset_1(self):
         dataset_1 = self.make_dataset(name="assay_1")
+
+        for _ in range(3):
+            image = self.create_test_image(
+                100, 100, 1, 1, 1, self.client.getSession()
+            )
+            self.link(dataset_1, image)
+
+        return dataset_1
+
+    @pytest.fixture()
+    def dataset_2(self):
         dataset_2 = self.make_dataset(name="assay_2")
+
+        for _ in range(3):
+            image = self.create_test_image(
+                100, 100, 1, 1, 1, self.client.getSession()
+            )
+            self.link(dataset_2, image)
+
+        return dataset_2
+
+    @pytest.fixture()
+    def project_1(self, dataset_1, dataset_2):
+        project_1 = self.make_project(name="study_1")
 
         self.link(project_1, dataset_1)
         self.link(project_1, dataset_2)
 
-        for _ in range(3):
-            image = self.create_test_image(100, 100, 1, 1, 1, self.client.getSession())
-            self.link(dataset_1, image)
+        return project_1
 
-        for _ in range(2):
-            image = self.create_test_image(150, 150, 3, 1, 1, self.client.getSession())
-            self.link(dataset_2, image)
+    def test_pack_arc_fails_for_dataset(self, dataset_1, tmp_path):
+        # only projects can be packed as arc
+        dataset_identifier = f"Dataset:{dataset_1.id._val}"
+        path_to_arc = tmp_path / "my_arc"
+        args = self.args[:8] + [
+            "pack",
+            "--arc",
+            dataset_identifier,
+            str(path_to_arc),
+        ]
 
+        with pytest.raises(ValueError):
+            self.cli.invoke(args)
+
+    def test_pack_arc(self, project_1, tmp_path):
         project_identifier = f"Project:{project_1.id._val}"
-        path_to_arc = tmp_path / "my_arc.tar"
-        args = self.args[:8] + ["pack", "--arc", project_identifier, str(path_to_arc)]
+        path_to_arc = tmp_path / "my_arc"
+        args = self.args[:8] + [
+            "pack",
+            "--arc",
+            project_identifier,
+            str(path_to_arc),
+        ]
         self.cli.invoke(args)
 
         assert path_to_arc.exists()
