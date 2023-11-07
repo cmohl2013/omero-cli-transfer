@@ -16,6 +16,13 @@ export JAVA_LD_LIBRARY_PATH="$JAVA_HOME/lib/:$JAVA_HOME/lib/server"
 export CONDA_BACKUP_JAVA_HOME=$JAVA_HOME
 export CONDA_BACKUP_JAVA_LD_LIBRARY_PATH=$JAVA_LD_LIBRARY_PATH
 
+wget --quiet https://github.com/nfdi4plants/arcCommander/releases/download/v0.5.0-linux.x64/arc
+mkdir $HOME/bin
+mv arc $HOME/bin/
+chmod a+x $HOME/bin/arc
+export PATH="$HOME/bin:$PATH"
+arc --version
+
 source /tmp/miniconda/bin/activate
 conda init
 conda activate omero

@@ -13,10 +13,12 @@ from omero.rtypes import rstring
 
 from omero.testlib import ITest
 from mox3 import mox
+from omero_cli_transfer import TransferControl
+from omero.model import MapAnnotationI, NamedValue
+from omero.gateway import BlitzGateway
 
 
 class AbstractCLITest(ITest):
-
     @classmethod
     def setup_class(cls):
         super(AbstractCLITest, cls).setup_class()
@@ -32,21 +34,20 @@ class AbstractCLITest(ITest):
 
 
 class CLITest(AbstractCLITest):
-
     def setup_method(self, method):
         self.args = self.login_args()
 
     def create_object(self, object_type, name=""):
         # create object
-        if object_type == 'Dataset':
+        if object_type == "Dataset":
             new_object = omero.model.DatasetI()
-        elif object_type == 'Project':
+        elif object_type == "Project":
             new_object = omero.model.ProjectI()
-        elif object_type == 'Plate':
+        elif object_type == "Plate":
             new_object = omero.model.PlateI()
-        elif object_type == 'Screen':
+        elif object_type == "Screen":
             new_object = omero.model.ScreenI()
-        elif object_type == 'Image':
+        elif object_type == "Image":
             new_object = self.new_image()
         new_object.name = rstring(name)
         new_object = self.update.saveAndReturnObject(new_object)
@@ -67,8 +68,70 @@ class CLITest(AbstractCLITest):
         return proj, dset, img
 
 
-class RootCLITest(AbstractCLITest):
+class AbstractArcTest(AbstractCLITest):
+    def setup_method(self, method):
+        self.args = self.login_args()
+        self.cli.register("transfer", TransferControl, "TEST")
+        self.args += ["transfer"]
+        self.gw = BlitzGateway(client_obj=self.client)
+        self.session = self.client.getSessionId()
 
+    def create_mapped_annotation(
+        self, name=None, map_values=None, namespace=None, parent_object=None
+    ):
+        map_annotation = self.new_object(MapAnnotationI, name=name)
+        if map_values is not None:
+            map_value_ls = [
+                NamedValue(str(key), str(map_values[key]))
+                for key in map_values
+            ]
+            map_annotation.setMapValue(map_value_ls)
+        if namespace is not None:
+            map_annotation.setNs(rstring(namespace))
+
+        map_annotation = self.client.sf.getUpdateService().saveAndReturnObject(
+            map_annotation
+        )
+        if parent_object is not None:
+            self.link(parent_object, map_annotation)
+
+        return map_annotation
+
+    @pytest.fixture(scope="function")
+    def dataset_1(self):
+        dataset_1 = self.make_dataset(name="assay_1")
+
+        for _ in range(3):
+            image = self.create_test_image(
+                100, 100, 1, 1, 1, self.client.getSession()
+            )
+            self.link(dataset_1, image)
+
+        return dataset_1
+
+    @pytest.fixture(scope="function")
+    def dataset_2(self):
+        dataset_2 = self.make_dataset(name="assay_2")
+
+        for _ in range(3):
+            image = self.create_test_image(
+                100, 100, 1, 1, 1, self.client.getSession()
+            )
+            self.link(dataset_2, image)
+
+        return dataset_2
+
+    @pytest.fixture(scope="function")
+    def project_1(self, dataset_1, dataset_2):
+        project_1 = self.make_project(name="study_1")
+
+        self.link(project_1, dataset_1)
+        self.link(project_1, dataset_2)
+
+        return project_1
+
+
+class RootCLITest(AbstractCLITest):
     def setup_method(self, method):
         self.args = self.root_login_args()
 
@@ -99,43 +162,43 @@ class ArgumentFixture(object):
 
 
 UserIdNameFixtures = (
-    ArgumentFixture('--id', 'id'),
-    ArgumentFixture('--name', 'omeName'),
-    )
+    ArgumentFixture("--id", "id"),
+    ArgumentFixture("--name", "omeName"),
+)
 
 UserFixtures = (
-    ArgumentFixture(None, 'id'),
-    ArgumentFixture(None, 'omeName'),
-    ArgumentFixture('--user-id', 'id'),
-    ArgumentFixture('--user-name', 'omeName'),
-    )
+    ArgumentFixture(None, "id"),
+    ArgumentFixture(None, "omeName"),
+    ArgumentFixture("--user-id", "id"),
+    ArgumentFixture("--user-name", "omeName"),
+)
 
 GroupIdNameFixtures = (
-    ArgumentFixture('--id', 'id'),
-    ArgumentFixture('--name', 'name'),
-    )
+    ArgumentFixture("--id", "id"),
+    ArgumentFixture("--name", "name"),
+)
 
 GroupFixtures = (
-    ArgumentFixture(None, 'id'),
-    ArgumentFixture(None, 'name'),
-    ArgumentFixture('--group-id', 'id'),
-    ArgumentFixture('--group-name', 'name'),
-    )
+    ArgumentFixture(None, "id"),
+    ArgumentFixture(None, "name"),
+    ArgumentFixture("--group-id", "id"),
+    ArgumentFixture("--group-name", "name"),
+)
 
 
 def get_user_ids(out, sort_key=None):
-    columns = {'login': 1, 'first-name': 2, 'last-name': 3, 'email': 4}
-    lines = out.split('\n')
+    columns = {"login": 1, "first-name": 2, "last-name": 3, "email": 4}
+    lines = out.split("\n")
     ids = []
     last_value = None
     for line in lines[2:]:
-        elements = line.split('|')
+        elements = line.split("|")
         if len(elements) < 8:
             continue
 
         ids.append(int(elements[0].strip()))
         if sort_key:
-            if sort_key == 'id':
+            if sort_key == "id":
                 new_value = ids[-1]
             else:
                 new_value = elements[columns[sort_key]].strip()
@@ -145,17 +208,17 @@ def get_user_ids(out, sort_key=None):
 
 
 def get_group_ids(out, sort_key=None):
-    lines = out.split('\n')
+    lines = out.split("\n")
     ids = []
     last_value = None
     for line in lines[2:]:
-        elements = line.split('|')
+        elements = line.split("|")
         if len(elements) < 4:
             continue
 
         ids.append(int(elements[0].strip()))
         if sort_key:
-            if sort_key == 'id':
+            if sort_key == "id":
                 new_value = ids[-1]
             else:
                 new_value = elements[1].strip()
