@@ -140,7 +140,7 @@ class TestArcPacker(AbstractArcTest):
         ap._create_study()
         ap._create_assays()
 
-        _ = ap.image_metadata_for_assay("my-first-assay")
+        ap.image_metadata_for_assay("my-first-assay")
         ap._add_image_metadata()
 
         pass
