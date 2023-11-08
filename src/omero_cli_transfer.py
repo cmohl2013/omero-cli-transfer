@@ -541,8 +541,11 @@ class TransferControl(GraphControl):
         if args.arc:
             print(f"Creating or updating ARC repository at {folder}")
 
-            arc_packer = ArcPacker(Path(tar_path))
-            arc_packer.add_omero_data(Path(folder))
+            arc_packer = ArcPacker(
+                path_to_arc_repo=Path(tar_path),
+                path_to_xml_source=Path(folder),
+            )
+            arc_packer.initialize_arc_repo()
 
         else:
             self._package_files(

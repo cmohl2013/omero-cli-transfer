@@ -17,7 +17,7 @@ class TestArcPacker(AbstractArcTest):
         )
         os.makedirs(path_to_arc_test_data, exist_ok=True)
 
-        if request.config.option.not_create_arc_test_data:
+        if request.config.option.skip_create_arc_test_data:
             # if pytest is used with option --not-create-arc-test-data
             return path_to_arc_test_data
 
@@ -43,21 +43,17 @@ class TestArcPacker(AbstractArcTest):
         return path_arc_test_data / "project_1"
 
     def test_arc_packer_read_omedata(self, path_omero_data_1, tmp_path):
-        ap = ArcPacker(tmp_path / "my_arc")
-
-        ap.add_omero_data(path_omero_data_1)
-
+        ap = ArcPacker(tmp_path / "my_arc", path_omero_data_1)
         assert ap.ome is not None
         print(tmp_path)
 
-    def test_arc_packer_create_investigation(
-        self, path_omero_data_1, tmp_path
-    ):
+    def test_arc_packer_initialize(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        ap = ArcPacker(path_to_arc_repo)
-        ap.add_omero_data(path_omero_data_1)
-
-        ap.create_investigation()
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_xml_source=path_omero_data_1,
+        )
+        ap.initialize_arc_repo()
         df = pd.read_excel(
             path_to_arc_repo / "isa.investigation.xlsx",
             index_col=0,
@@ -68,3 +64,25 @@ class TestArcPacker(AbstractArcTest):
             == "test-investigation-1"
         )
         assert df.loc["Investigation Title"].iloc[0] == "Test Investigation 1"
+
+    def test_arc_packer_create_studies(self, path_omero_data_1, tmp_path):
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_xml_source=path_omero_data_1,
+        )
+        ap.initialize_arc_repo()
+
+        ap._create_study()
+
+        assert (path_to_arc_repo / "studies/study_1").exists()
+        assert (path_to_arc_repo / "studies/study_1/isa.study.xlsx").exists()
+
+        df = pd.read_excel(
+            path_to_arc_repo / "studies/study_1/isa.study.xlsx",
+            sheet_name="Study",
+            index_col=0,
+        )
+
+        assert df.loc["Study Title"].iloc[0] == "study_1"
+        assert df.loc["Study Identifier"].iloc[0] == "study_1"
