@@ -86,3 +86,20 @@ class TestArcPacker(AbstractArcTest):
 
         assert df.loc["Study Title"].iloc[0] == "study_1"
         assert df.loc["Study Identifier"].iloc[0] == "study_1"
+
+    def test_arc_packer_create_assays(self, path_omero_data_1, tmp_path):
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_xml_source=path_omero_data_1,
+        )
+        ap.initialize_arc_repo()
+
+        ap._create_study()
+        ap._create_assays()
+
+        assert (path_to_arc_repo / "assays/assay_1").exists()
+        assert (path_to_arc_repo / "assays/assay_2").exists()
+        # assert (path_to_arc_repo / "studies/study_1/isa.study.xlsx").exists()
+
+    # def test_arc_packer_create_dataset_for_assay(self, path_omero_data_1, )

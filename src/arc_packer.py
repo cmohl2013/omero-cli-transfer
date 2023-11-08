@@ -48,7 +48,7 @@ class ArcPacker(object):
 
         project_info = self.ome.projects[0]
         study_title = project_info.name
-        study_identifier = fmt_identifier(study_title)
+        self.study_identifier = fmt_identifier(study_title)
 
         subprocess.run(
             [
@@ -56,9 +56,34 @@ class ArcPacker(object):
                 "s",
                 "add",
                 "--identifier",
-                study_identifier,
+                self.study_identifier,
                 "--title",
                 study_title,
             ],
             cwd=self.path_to_arc_repo,
         )
+
+    def _create_assays(self):
+        measurement_type = "Microscopy"
+
+        dataset_ids = [e.id for e in self.ome.projects[0].dataset_refs]
+        datasets_selected = [
+            e for e in self.ome.datasets if e.id in dataset_ids
+        ]
+
+        for dataset in datasets_selected:
+            assay_identifier = fmt_identifier(dataset.name)
+            subprocess.run(
+                [
+                    "arc",
+                    "a",
+                    "add",
+                    "--studyidentifier",
+                    self.study_identifier,
+                    "--assayidentifier",
+                    assay_identifier,
+                    "--measurementtype",
+                    measurement_type,
+                ],
+                cwd=self.path_to_arc_repo,
+            )
