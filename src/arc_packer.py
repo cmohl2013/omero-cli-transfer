@@ -4,6 +4,7 @@ from ome_types import from_xml
 import subprocess
 import shutil
 import pandas as pd
+import yaml
 
 
 def fmt_identifier(title: str) -> str:
@@ -15,12 +16,19 @@ class ArcPacker(object):
         self.path_to_arc_repo = path_to_arc_repo
         self.path_to_xml_source = path_to_xml_source
         self._add_omero_data(path_to_xml_source)
+        self._read_mapping_config()
 
     def _add_omero_data(self, source_folder: Path):
         with open(source_folder / "transfer.xml") as f:
             xmldata = f.read()
 
         self.ome = from_xml(xmldata)
+
+    def _read_mapping_config(self):
+        path = Path(__file__).parent.parent / "arc_mapping.yml"
+
+        with open(path, "r") as f:
+            self.mapping_config = yaml.safe_load(f)
 
     def initialize_arc_repo(self):
         assert self.ome is not None
@@ -49,22 +57,28 @@ class ArcPacker(object):
             len(self.ome.projects) == 1
         ), "only datasets containing one project are allowed"
 
-        project_info = self.ome.projects[0]
-        study_title = project_info.name
-        self.study_identifier = fmt_identifier(study_title)
+        project = self.ome.projects[0]
 
-        subprocess.run(
-            [
-                "arc",
-                "s",
-                "add",
-                "--identifier",
-                self.study_identifier,
-                "--title",
-                study_title,
-            ],
-            cwd=self.path_to_arc_repo,
-        )
+        args_from_config = self.mapping_config["study"]["arc_commander_args"]
+        study_title = project.name
+        self.study_identifier = fmt_identifier(study_title)
+        args = ["arc", "s", "add"]
+        for key in args_from_config:
+            option_arg_string = f"--{key}"
+            args.append(option_arg_string)
+            value = args_from_config[key]
+            if isinstance(value, dict):
+                for func_arg_name in value.keys():
+                    augmentation_func_name = value[func_arg_name][
+                        "augmentation_method"
+                    ]
+                    augmentation_func = eval(augmentation_func_name)
+                    augmented_value = augmentation_func(eval(func_arg_name))
+                    args.append(augmented_value)
+
+            else:
+                args.append(eval(args_from_config[key]))
+        subprocess.run(args, cwd=self.path_to_arc_repo)
 
     def _create_assays(self):
         measurement_type = "Microscopy"
@@ -132,7 +146,7 @@ class ArcPacker(object):
         self, ome_image_ids, img_fmt=".tiff"
     ):
         return [
-            self._ome_image_filename_for_ome_image_id(id)
+            self._ome_image_filename_for_ome_image_id(id, img_fmt=img_fmt)
             for id in ome_image_ids
         ]
 

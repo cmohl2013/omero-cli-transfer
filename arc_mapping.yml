@@ -1,7 +1,9 @@
 ---
 study:
   arc_commander_args:
-    identifer: project.info.name
+    identifier:
+      project.name:
+        augmentation_method: fmt_identifier
     title: project.name
 assay:
   arc_commander_args:
@@ -10,13 +12,28 @@ assay:
     measurementtype: "Microscopy"
   sheets:
     "Image Files":
-      - image.id
-      - image.name
-      - image.description
-      - method:ome_image_filename_for_ome_image_id:
-        args:
-         - ome_image_id: image.id
-         - skip_path: True
+      columns:
+        image.id:
+          target_colname: ome_id
+        image.name:
+          target_colname: Name
+        image.description:
+          target_colname: Description
+        image.id:
+          target_colname: image_filename
+          augmentation_method: ome_image_filename_for_image_id
+          args:
+            skip_path: True
+    "Image Metadata":
+      columns:
+        image.id:
+          target_colname: image_filename
+          augmentation_method: ome_image_filename_for_image_id
+          args:
+            skip_path: True
+      column_collections: image.pixels
+        
+
 
         
 

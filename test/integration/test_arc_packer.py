@@ -129,7 +129,8 @@ class TestArcPacker(AbstractArcTest):
         ):
             assert img_filename.name in img_filenames_in_arc
 
-    def test_arc_packer_image_metadata(self, path_omero_data_1, tmp_path):
+    @pytest.fixture()
+    def arc_repo_1(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
@@ -139,8 +140,19 @@ class TestArcPacker(AbstractArcTest):
 
         ap._create_study()
         ap._create_assays()
+        ap._add_image_data_for_assay(assay_identifier="my-first-assay")
+        ap._add_image_data_for_assay(assay_identifier="my-second-assay")
+        return ap
 
+    def test_arc_packer_image_metadata(self, arc_repo_1):
+        ap = arc_repo_1
         ap.image_metadata_for_assay("my-first-assay")
         ap._add_image_metadata()
 
         pass
+
+    def test_arc_packer_read_mapping_config(self, arc_repo_1):
+        ap = arc_repo_1
+
+        ap._read_mapping_config()
+        assert ap.mapping_config is not None
