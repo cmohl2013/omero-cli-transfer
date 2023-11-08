@@ -99,11 +99,12 @@ class AbstractArcTest(AbstractCLITest):
 
     @pytest.fixture(scope="function")
     def dataset_1(self):
-        dataset_1 = self.make_dataset(name="assay_1")
+        dataset_1 = self.make_dataset(name="My First Assay")
 
-        for _ in range(3):
+        for i in range(3):
+            img_name = f"assay 2 image {i}"
             image = self.create_test_image(
-                100, 100, 1, 1, 1, self.client.getSession()
+                80, 40, 3, 4, 2, self.client.getSession(), name=img_name
             )
             self.link(dataset_1, image)
 
@@ -111,11 +112,12 @@ class AbstractArcTest(AbstractCLITest):
 
     @pytest.fixture(scope="function")
     def dataset_2(self):
-        dataset_2 = self.make_dataset(name="assay_2")
+        dataset_2 = self.make_dataset(name="My Second Assay")
 
-        for _ in range(3):
+        for i in range(3):
+            img_name = f"assay 2 image {i}"
             image = self.create_test_image(
-                100, 100, 1, 1, 1, self.client.getSession()
+                100, 100, 1, 1, 1, self.client.getSession(), name=img_name
             )
             self.link(dataset_2, image)
 
@@ -123,7 +125,7 @@ class AbstractArcTest(AbstractCLITest):
 
     @pytest.fixture(scope="function")
     def project_1(self, dataset_1, dataset_2):
-        project_1 = self.make_project(name="study_1")
+        project_1 = self.make_project(name="My First Study")
 
         self.link(project_1, dataset_1)
         self.link(project_1, dataset_2)

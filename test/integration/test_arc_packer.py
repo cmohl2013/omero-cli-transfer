@@ -75,17 +75,19 @@ class TestArcPacker(AbstractArcTest):
 
         ap._create_study()
 
-        assert (path_to_arc_repo / "studies/study_1").exists()
-        assert (path_to_arc_repo / "studies/study_1/isa.study.xlsx").exists()
+        assert (path_to_arc_repo / "studies/my-first-study").exists()
+        assert (
+            path_to_arc_repo / "studies/my-first-study/isa.study.xlsx"
+        ).exists()
 
         df = pd.read_excel(
-            path_to_arc_repo / "studies/study_1/isa.study.xlsx",
+            path_to_arc_repo / "studies/my-first-study/isa.study.xlsx",
             sheet_name="Study",
             index_col=0,
         )
 
-        assert df.loc["Study Title"].iloc[0] == "study_1"
-        assert df.loc["Study Identifier"].iloc[0] == "study_1"
+        assert df.loc["Study Title"].iloc[0] == "My First Study"
+        assert df.loc["Study Identifier"].iloc[0] == "my-first-study"
 
     def test_arc_packer_create_assays(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
@@ -98,8 +100,31 @@ class TestArcPacker(AbstractArcTest):
         ap._create_study()
         ap._create_assays()
 
-        assert (path_to_arc_repo / "assays/assay_1").exists()
-        assert (path_to_arc_repo / "assays/assay_2").exists()
+        assert (path_to_arc_repo / "assays/my-first-assay").exists()
+        assert (path_to_arc_repo / "assays/my-second-assay").exists()
         # assert (path_to_arc_repo / "studies/study_1/isa.study.xlsx").exists()
 
-    # def test_arc_packer_create_dataset_for_assay(self, path_omero_data_1, )
+    def test_arc_packer_add_image_data_for_assay(
+        self, path_omero_data_1, tmp_path
+    ):
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_xml_source=path_omero_data_1,
+        )
+        ap.initialize_arc_repo()
+
+        ap._create_study()
+        ap._create_assays()
+        ap._add_image_data_for_assay(assay_identifier="my-first-assay")
+
+        ome_dataset_id = ap.assay_identifiers["my-first-assay"]
+
+        img_filenames_in_arc = os.listdir(
+            tmp_path / "my_arc/assays/my-first-assay/dataset"
+        )
+
+        for img_filename in ap._ome_image_filenames_for_ome_dataset(
+            ome_dataset_id
+        ):
+            assert img_filename.name in img_filenames_in_arc
