@@ -128,3 +128,19 @@ class TestArcPacker(AbstractArcTest):
             ome_dataset_id
         ):
             assert img_filename.name in img_filenames_in_arc
+
+    def test_arc_packer_image_metadata(self, path_omero_data_1, tmp_path):
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_xml_source=path_omero_data_1,
+        )
+        ap.initialize_arc_repo()
+
+        ap._create_study()
+        ap._create_assays()
+
+        _ = ap.image_metadata_for_assay("my-first-assay")
+        ap._add_image_metadata()
+
+        pass

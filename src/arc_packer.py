@@ -3,6 +3,7 @@ from pathlib import Path
 from ome_types import from_xml
 import subprocess
 import shutil
+import pandas as pd
 
 
 def fmt_identifier(title: str) -> str:
@@ -92,25 +93,48 @@ class ArcPacker(object):
                 cwd=self.path_to_arc_repo,
             )
 
+    def isa_assay_filename(self, assay_identifier):
+        assert assay_identifier in self.assay_identifiers
+        path = (
+            self.path_to_arc_repo / f"assays/{assay_identifier}/isa.assay.xlsx"
+        )
+        assert path.exists()
+        return path
+
     def _ome_dataset_info(self, ome_dataset_id):
         dataset_sel = [e for e in self.ome.datasets if e.id == ome_dataset_id]
         assert len(dataset_sel) == 1, "dataset not existing"
         return dataset_sel[0]
 
+    def _image_ids_for_ome_dataset(self, ome_dataset_id):
+        dataset_sel = self._ome_dataset_info(ome_dataset_id)
+
+        return [e.id for e in dataset_sel.image_refs]
+
     def _ome_image_filenames_for_ome_dataset(
         self, ome_dataset_id, img_fmt=".tiff"
     ):
-        dataset_sel = self._ome_dataset_info(ome_dataset_id)
+        image_ids = self._image_ids_for_ome_dataset(ome_dataset_id)
+        return self._ome_image_filenames_for_ome_image_ids(
+            image_ids, img_fmt=img_fmt
+        )
 
-        image_ids = [e.id.split(":")[1] for e in dataset_sel.image_refs]
-        out = []
-        for image_id in image_ids:
-            img_filepath = (
-                self.path_to_xml_source / f"pixel_images/{image_id}"
-            ).with_suffix(img_fmt)
-            assert img_filepath.exists()
-            out.append(img_filepath)
-        return out
+    def _ome_image_filename_for_ome_image_id(
+        self, ome_image_id, img_fmt=".tiff"
+    ):
+        img_id = ome_image_id.split(":")[1]
+        img_filepath = (
+            self.path_to_xml_source / f"pixel_images/{img_id}"
+        ).with_suffix(img_fmt)
+        return img_filepath
+
+    def _ome_image_filenames_for_ome_image_ids(
+        self, ome_image_ids, img_fmt=".tiff"
+    ):
+        return [
+            self._ome_image_filename_for_ome_image_id(id)
+            for id in ome_image_ids
+        ]
 
     def _add_image_data_for_assay(self, assay_identifier):
         assert (
@@ -127,3 +151,43 @@ class ArcPacker(object):
             ome_dataset_id
         ):
             shutil.copy2(img_filepath, dest_image_folder / img_filepath.name)
+
+    def image_metadata_for_assay(self, assay_identifier):
+        ome_dataset_id = self.assay_identifiers[assay_identifier]
+        image_ids = self._image_ids_for_ome_dataset(ome_dataset_id)
+
+        image_records_sel = [e for e in self.ome.images if e.id in image_ids]
+
+        img_data = []
+        for image_record in image_records_sel:
+            img_filename = self._ome_image_filename_for_ome_image_id(
+                image_record.id, img_fmt=".tiff"
+            )
+            metadata = (pd.DataFrame(image_record.pixels).set_index(0)).iloc[
+                :, 0
+            ]
+            img_identifiers = pd.Series(
+                {
+                    "ome_id": image_record.id,
+                    "name": image_record.name,
+                    "description": image_record.description,
+                    "filename": img_filename.name,
+                }
+            )
+            img_data.append(pd.concat([img_identifiers, metadata]))
+        return pd.concat(img_data, axis=1).T.set_index("filename")
+
+    def _add_image_metadata(self):
+        for assay_identifier in self.assay_identifiers:
+            df = self.image_metadata_for_assay(
+                assay_identifier=assay_identifier
+            )
+
+            path = self.isa_assay_filename(assay_identifier)
+
+            # book = load_workbook(path)
+            writer = pd.ExcelWriter(path, engine="openpyxl", mode="a")
+            # writer.book = book
+
+            df.to_excel(writer, sheet_name="Image Metadata")
+            writer.close()
