@@ -3,8 +3,17 @@ from pathlib import Path
 from ome_types import from_xml
 import subprocess
 import shutil
-import pandas as pd
 import yaml
+import importlib
+
+if importlib.util.find_spec("pandas"):
+    import pandas as pd
+else:
+    raise ImportError(
+        "Could not import pandas library. Make sure to "
+        "install omero-cli-transfer with the optional "
+        "[arc] addition"
+    )
 
 
 def fmt_identifier(title: str) -> str:
