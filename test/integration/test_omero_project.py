@@ -28,3 +28,15 @@ class TestOmeroProject(AbstractArcTest):
         path_to_file = p.image_filename(image_id, abspath=False)
         assert str(path_to_file.parent) == "pixel_images"
         assert path_to_file.suffix == ".tiff"
+
+    def test_omero_original_image_metadata(
+        self, path_omero_data_1, path_omero_data_czi
+    ):
+        p = OmeroProject(path_omero_data_czi, self.gw)
+        dataset_id = p.dataset_ids()[0]
+        for image_id in p.image_ids(dataset_id):
+            metadata = p.original_image_metadata(image_id)
+            if p.image_filename(image_id).suffix == ".czi":
+                assert len(metadata) == 10129
+            elif p.image_filename(image_id).suffix == ".tiff":
+                assert metadata.empty
