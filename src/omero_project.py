@@ -1,6 +1,16 @@
 from pathlib import Path
 from ome_types import from_xml
 from generate_xml import list_file_ids
+import importlib
+
+if importlib.util.find_spec("pandas"):
+    import pandas as pd
+else:
+    raise ImportError(
+        "Could not import pandas library. Make sure to "
+        "install omero-cli-transfer with the optional "
+        "[arc] addition"
+    )
 
 
 class OmeroProject(object):
@@ -9,10 +19,11 @@ class OmeroProject(object):
     (xml with metadata and image files)
     """
 
-    def __init__(self, path_to_xml_source: Path):
+    def __init__(self, path_to_xml_source: Path, conn):
         self.path_to_xml_source = path_to_xml_source
         self.ome = None
         self._add_omero_data(path_to_xml_source)
+        self.conn = conn
         assert (
             len(self.ome.projects) == 1
         ), "ome dataset must contain exactly one project"
@@ -64,3 +75,13 @@ class OmeroProject(object):
         if not abspath:
             return rel_path
         return self.path_to_xml_source / rel_path
+
+    def original_image_metadata(self, image_id):
+        image_id_int = int(image_id.split(":")[1])
+        image_obj = self.conn.getObject("Image", image_id_int)
+        metadata = image_obj.loadOriginalMetadata()
+
+        metadata = pd.DataFrame(image_obj.loadOriginalMetadata()[1]).set_index(
+            0
+        )
+        return metadata

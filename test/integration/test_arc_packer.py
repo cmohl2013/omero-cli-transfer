@@ -7,7 +7,7 @@ import pandas as pd
 class TestArcPacker(AbstractArcTest):
     def test_arc_packer_initialize(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1)
+        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
             omero_project=p,
@@ -26,7 +26,7 @@ class TestArcPacker(AbstractArcTest):
 
     def test_arc_packer_create_studies(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1)
+        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
             omero_project=p,
@@ -51,7 +51,7 @@ class TestArcPacker(AbstractArcTest):
 
     def test_arc_packer_create_assays(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1)
+        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
             omero_project=p,
@@ -69,7 +69,7 @@ class TestArcPacker(AbstractArcTest):
         self, path_omero_data_czi, tmp_path
     ):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_czi)
+        p = OmeroProject(path_omero_data_czi, self.gw)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
             omero_project=p,
@@ -104,7 +104,7 @@ class TestArcPacker(AbstractArcTest):
     @pytest.fixture()
     def arc_repo_1(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1)
+        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
             omero_project=p,

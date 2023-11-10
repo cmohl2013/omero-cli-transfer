@@ -182,7 +182,7 @@ class AbstractArcTest(AbstractCLITest):
         )
         os.makedirs(path_to_arc_test_data, exist_ok=True)
 
-        if request.config.option.skip_create_arc_test_data or False:
+        if request.config.option.skip_create_arc_test_data:
             # if pytest is used with option --not-create-arc-test-data
             return path_to_arc_test_data
 

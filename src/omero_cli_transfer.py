@@ -544,7 +544,7 @@ class TransferControl(GraphControl):
 
             arc_packer = ArcPacker(
                 path_to_arc_repo=Path(tar_path),
-                omero_project=OmeroProject(Path(folder)),
+                omero_project=OmeroProject(Path(folder), self.gateway),
             )
             arc_packer.create_arc_repo()
 
