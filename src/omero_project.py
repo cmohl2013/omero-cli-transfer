@@ -79,12 +79,17 @@ class OmeroProject(object):
     def original_image_metadata(self, image_id):
         image_id_int = int(image_id.split(":")[1])
         image_obj = self.conn.getObject("Image", image_id_int)
-        metadata = image_obj.loadOriginalMetadata()[1]
+        metadata_ls = image_obj.loadOriginalMetadata()
 
-        if len(metadata) == 0:
-            out = pd.Series()
-        else:
-            out = pd.DataFrame(metadata).set_index(0)[1]
+        out = []
+        for metadata in metadata_ls:
+            if metadata is None:
+                continue
+            if len(metadata) == 0:
+                out.append(pd.Series())
+            else:
+                out.append(pd.DataFrame(metadata).set_index(0)[1])
 
+        out = pd.concat(out, axis=0)
         out.name = "Microscope Settings"
         return out

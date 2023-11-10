@@ -140,17 +140,20 @@ class AbstractArcTest(AbstractCLITest):
     def dataset_czi_1(self):
         dataset = self.make_dataset(name="My Assay with CZI Images")
 
+        def _add_local_image_file(path_to_img_file):
+            assert path_to_img_file.exists()
+
+            id = self.import_image(path_to_img_file)[0]
+
+            container_service = self.client.getSession().getContainerService()
+            image = container_service.getImages("Image", [int(id)], None)[0]
+            self.link(dataset, image)
+
         path_to_img_file = (
             Path(__file__).parent.parent
             / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
         )
-        assert path_to_img_file.exists()
-
-        id = self.import_image(path_to_img_file)[0]
-
-        container_service = self.client.getSession().getContainerService()
-        image = container_service.getImages("Image", [int(id)], None)[0]
-        self.link(dataset, image)
+        _add_local_image_file(path_to_img_file=path_to_img_file)
 
         image_tif = self.create_test_image(
             100,
@@ -161,8 +164,13 @@ class AbstractArcTest(AbstractCLITest):
             self.client.getSession(),
             name="another pixel image",
         )
-
         self.link(dataset, image_tif)
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/sted-confocal.lif"
+        )
+        _add_local_image_file(path_to_img_file=path_to_img_file)
 
         return dataset
 

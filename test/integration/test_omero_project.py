@@ -30,7 +30,8 @@ class TestOmeroProject(AbstractArcTest):
         assert path_to_file.suffix == ".tiff"
 
     def test_omero_original_image_metadata(
-        self, path_omero_data_1, path_omero_data_czi
+        self,
+        path_omero_data_czi,
     ):
         p = OmeroProject(path_omero_data_czi, self.gw)
         dataset_id = p.dataset_ids()[0]
@@ -40,3 +41,5 @@ class TestOmeroProject(AbstractArcTest):
                 assert len(metadata) == 10129
             elif p.image_filename(image_id).suffix == ".tiff":
                 assert metadata.empty
+            elif p.image_filename(image_id).suffix == ".lif":
+                assert len(metadata) == 432
