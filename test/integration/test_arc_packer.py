@@ -1,22 +1,16 @@
 from integration.cli import AbstractArcTest
 import pytest
-from omero_cli_transfer import ArcPacker
+from omero_cli_transfer import ArcPacker, OmeroProject
 import pandas as pd
-
-import os
 
 
 class TestArcPacker(AbstractArcTest):
-    def test_arc_packer_read_omedata(self, path_omero_data_1, tmp_path):
-        ap = ArcPacker(tmp_path / "my_arc", path_omero_data_1)
-        assert ap.ome is not None
-        print(tmp_path)
-
     def test_arc_packer_initialize(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_1)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
-            path_to_xml_source=path_omero_data_1,
+            omero_project=p,
         )
         ap.initialize_arc_repo()
         df = pd.read_excel(
@@ -32,9 +26,10 @@ class TestArcPacker(AbstractArcTest):
 
     def test_arc_packer_create_studies(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_1)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
-            path_to_xml_source=path_omero_data_1,
+            omero_project=p,
         )
         ap.initialize_arc_repo()
 
@@ -56,9 +51,10 @@ class TestArcPacker(AbstractArcTest):
 
     def test_arc_packer_create_assays(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_1)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
-            path_to_xml_source=path_omero_data_1,
+            omero_project=p,
         )
         ap.initialize_arc_repo()
 
@@ -70,43 +66,51 @@ class TestArcPacker(AbstractArcTest):
         # assert (path_to_arc_repo / "studies/study_1/isa.study.xlsx").exists()
 
     def test_arc_packer_add_image_data_for_assay(
-        self, path_omero_data_1, tmp_path
+        self, path_omero_data_czi, tmp_path
     ):
         path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_czi)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
-            path_to_xml_source=path_omero_data_1,
+            omero_project=p,
         )
         ap.initialize_arc_repo()
 
         ap._create_study()
         ap._create_assays()
         ap._add_image_data_for_assay(assay_identifier="my-first-assay")
-
-        ome_dataset_id = ap.assay_identifiers["my-first-assay"]
-
-        img_filenames_in_arc = os.listdir(
-            tmp_path / "my_arc/assays/my-first-assay/dataset"
+        ap._add_image_data_for_assay(
+            assay_identifier="my-assay-with-czi-images"
         )
 
-        for img_filename in ap._ome_image_filenames_for_ome_dataset(
-            ome_dataset_id
-        ):
-            assert img_filename.name in img_filenames_in_arc
+        dataset_id = ap.assay_identifiers["my-first-assay"]
+        for image_id in ap.omero_project.image_ids(dataset_id):
+            relpath = ap.omero_project.image_filename(image_id, abspath=False)
+            abspath = (
+                tmp_path / "my_arc/assays/my-first-assay/dataset" / relpath
+            )
+            assert abspath.exists()
+
+        dataset_id = ap.assay_identifiers["my-assay-with-czi-images"]
+        for image_id in ap.omero_project.image_ids(dataset_id):
+            relpath = ap.omero_project.image_filename(image_id, abspath=False)
+            abspath = (
+                tmp_path
+                / "my_arc/assays/my-assay-with-czi-images/dataset"
+                / relpath
+            )
+            assert abspath.exists()
 
     @pytest.fixture()
     def arc_repo_1(self, path_omero_data_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_1)
         ap = ArcPacker(
             path_to_arc_repo=path_to_arc_repo,
-            path_to_xml_source=path_omero_data_1,
+            omero_project=p,
         )
-        ap.initialize_arc_repo()
+        ap.create_arc_repo()
 
-        ap._create_study()
-        ap._create_assays()
-        ap._add_image_data_for_assay(assay_identifier="my-first-assay")
-        ap._add_image_data_for_assay(assay_identifier="my-second-assay")
         return ap
 
     def test_arc_packer_image_metadata(self, arc_repo_1):

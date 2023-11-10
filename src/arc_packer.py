@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from ome_types import from_xml
 import subprocess
 import shutil
 import yaml
@@ -21,17 +20,10 @@ def fmt_identifier(title: str) -> str:
 
 
 class ArcPacker(object):
-    def __init__(self, path_to_arc_repo: Path, path_to_xml_source: Path):
+    def __init__(self, path_to_arc_repo: Path, omero_project):
         self.path_to_arc_repo = path_to_arc_repo
-        self.path_to_xml_source = path_to_xml_source
-        self._add_omero_data(path_to_xml_source)
+        self.omero_project = omero_project
         self._read_mapping_config()
-
-    def _add_omero_data(self, source_folder: Path):
-        with open(source_folder / "transfer.xml") as f:
-            xmldata = f.read()
-
-        self.ome = from_xml(xmldata)
 
     def _read_mapping_config(self):
         path = Path(__file__).parent.parent / "arc_mapping.yml"
@@ -39,8 +31,14 @@ class ArcPacker(object):
         with open(path, "r") as f:
             self.mapping_config = yaml.safe_load(f)
 
+    def create_arc_repo(self):
+        self.initialize_arc_repo()
+        self._create_study()
+        self._create_assays()
+        for assay_identifier in self.assay_identifiers:
+            self._add_image_data_for_assay(assay_identifier)
+
     def initialize_arc_repo(self):
-        assert self.ome is not None
         os.makedirs(self.path_to_arc_repo, exist_ok=False)
 
         subprocess.run(["arc", "init"], cwd=self.path_to_arc_repo)
@@ -62,13 +60,9 @@ class ArcPacker(object):
         )
 
     def _create_study(self):
-        assert (
-            len(self.ome.projects) == 1
-        ), "only datasets containing one project are allowed"
-
-        project = self.ome.projects[0]
-
         args_from_config = self.mapping_config["study"]["arc_commander_args"]
+        project = self.omero_project.project
+
         study_title = project.name
         self.study_identifier = fmt_identifier(study_title)
         args = ["arc", "s", "add"]
@@ -92,13 +86,8 @@ class ArcPacker(object):
     def _create_assays(self):
         measurement_type = "Microscopy"
 
-        dataset_ids = [e.id for e in self.ome.projects[0].dataset_refs]
-        datasets_selected = [
-            e for e in self.ome.datasets if e.id in dataset_ids
-        ]
-
         self.assay_identifiers = {}
-        for dataset in datasets_selected:
+        for dataset in self.omero_project.datasets:
             assay_identifier = fmt_identifier(dataset.name)
             self.assay_identifiers[assay_identifier] = dataset.id
             subprocess.run(
@@ -124,41 +113,6 @@ class ArcPacker(object):
         assert path.exists()
         return path
 
-    def _ome_dataset_info(self, ome_dataset_id):
-        dataset_sel = [e for e in self.ome.datasets if e.id == ome_dataset_id]
-        assert len(dataset_sel) == 1, "dataset not existing"
-        return dataset_sel[0]
-
-    def _image_ids_for_ome_dataset(self, ome_dataset_id):
-        dataset_sel = self._ome_dataset_info(ome_dataset_id)
-
-        return [e.id for e in dataset_sel.image_refs]
-
-    def _ome_image_filenames_for_ome_dataset(
-        self, ome_dataset_id, img_fmt=".tiff"
-    ):
-        image_ids = self._image_ids_for_ome_dataset(ome_dataset_id)
-        return self._ome_image_filenames_for_ome_image_ids(
-            image_ids, img_fmt=img_fmt
-        )
-
-    def _ome_image_filename_for_ome_image_id(
-        self, ome_image_id, img_fmt=".tiff"
-    ):
-        img_id = ome_image_id.split(":")[1]
-        img_filepath = (
-            self.path_to_xml_source / f"pixel_images/{img_id}"
-        ).with_suffix(img_fmt)
-        return img_filepath
-
-    def _ome_image_filenames_for_ome_image_ids(
-        self, ome_image_ids, img_fmt=".tiff"
-    ):
-        return [
-            self._ome_image_filename_for_ome_image_id(id, img_fmt=img_fmt)
-            for id in ome_image_ids
-        ]
-
     def _add_image_data_for_assay(self, assay_identifier):
         assert (
             assay_identifier in self.assay_identifiers
@@ -170,21 +124,23 @@ class ArcPacker(object):
         dest_image_folder = (
             self.path_to_arc_repo / f"assays/{assay_identifier}/dataset"
         )
-        for img_filepath in self._ome_image_filenames_for_ome_dataset(
-            ome_dataset_id
-        ):
-            shutil.copy2(img_filepath, dest_image_folder / img_filepath.name)
+        for image_id in self.omero_project.image_ids(ome_dataset_id):
+            img_filepath_abs = self.omero_project.image_filename(
+                image_id, abspath=True
+            )
+            img_fileppath_rel = self.omero_project.image_filename(
+                image_id, abspath=False
+            )
+            target_path = dest_image_folder / img_fileppath_rel
+            os.makedirs(target_path.parent, exist_ok=True)
+            shutil.copy2(img_filepath_abs, target_path)
 
     def image_metadata_for_assay(self, assay_identifier):
         ome_dataset_id = self.assay_identifiers[assay_identifier]
-        image_ids = self._image_ids_for_ome_dataset(ome_dataset_id)
-
-        image_records_sel = [e for e in self.ome.images if e.id in image_ids]
-
         img_data = []
-        for image_record in image_records_sel:
-            img_filename = self._ome_image_filename_for_ome_image_id(
-                image_record.id, img_fmt=".tiff"
+        for image_record in self.omero_project.images(ome_dataset_id):
+            img_filename = self.omero_project.image_filename(
+                image_record.id, abspath=False
             )
             metadata = (pd.DataFrame(image_record.pixels).set_index(0)).iloc[
                 :, 0
@@ -194,7 +150,7 @@ class ArcPacker(object):
                     "ome_id": image_record.id,
                     "name": image_record.name,
                     "description": image_record.description,
-                    "filename": img_filename.name,
+                    "filename": img_filename,
                 }
             )
             img_data.append(pd.concat([img_identifiers, metadata]))
