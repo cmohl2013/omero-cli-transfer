@@ -16,6 +16,10 @@ from mox3 import mox
 from omero_cli_transfer import TransferControl
 from omero.model import MapAnnotationI, NamedValue
 from omero.gateway import BlitzGateway
+from pathlib import Path
+import os
+import tarfile
+import shutil
 
 
 class AbstractCLITest(ITest):
@@ -131,6 +135,88 @@ class AbstractArcTest(AbstractCLITest):
         self.link(project_1, dataset_2)
 
         return project_1
+
+    @pytest.fixture(scope="function")
+    def dataset_czi_1(self):
+        dataset = self.make_dataset(name="My Assay with CZI Images")
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
+        )
+        assert path_to_img_file.exists()
+
+        id = self.import_image(path_to_img_file)[0]
+
+        container_service = self.client.getSession().getContainerService()
+        image = container_service.getImages("Image", [int(id)], None)[0]
+        self.link(dataset, image)
+
+        image_tif = self.create_test_image(
+            100,
+            100,
+            1,
+            1,
+            1,
+            self.client.getSession(),
+            name="another pixel image",
+        )
+
+        self.link(dataset, image_tif)
+
+        return dataset
+
+    @pytest.fixture(scope="function")
+    def project_czi(self, dataset_czi_1, dataset_1):
+        project_czi = self.make_project(name="My Study with a CZI Image")
+
+        self.link(project_czi, dataset_czi_1)
+        self.link(project_czi, dataset_1)
+
+        return project_czi
+
+    @pytest.fixture(scope="function")
+    def path_arc_test_data(self, project_1, project_czi, request):
+        path_to_arc_test_data = (
+            Path(__file__).parent.parent / "data/arc_test_data/packed_projects"
+        )
+        os.makedirs(path_to_arc_test_data, exist_ok=True)
+
+        if request.config.option.skip_create_arc_test_data:
+            # if pytest is used with option --not-create-arc-test-data
+            return path_to_arc_test_data
+
+        shutil.rmtree(path_to_arc_test_data)
+        os.makedirs(path_to_arc_test_data, exist_ok=True)
+
+        for project, project_name in [
+            (project_1, "project_1"),
+            (project_czi, "project_czi"),
+        ]:
+            project_identifier = f"Project:{project.id._val}"
+            path_to_arc_test_dataset = path_to_arc_test_data / project_name
+            args = self.args + [
+                "pack",
+                project_identifier,
+                str(path_to_arc_test_dataset),
+            ]
+            self.cli.invoke(args)
+
+            with tarfile.open(
+                path_to_arc_test_dataset.with_suffix(".tar")
+            ) as f:
+                f.extractall(path_to_arc_test_dataset)
+            os.remove(path_to_arc_test_dataset.with_suffix(".tar"))
+
+        return path_to_arc_test_data
+
+    @pytest.fixture(scope="function")
+    def path_omero_data_1(self, path_arc_test_data):
+        return path_arc_test_data / "project_1"
+
+    @pytest.fixture(scope="function")
+    def path_omero_data_czi(self, path_arc_test_data):
+        return path_arc_test_data / "project_czi"
 
 
 class RootCLITest(AbstractCLITest):

@@ -1,47 +1,12 @@
 from integration.cli import AbstractArcTest
 import pytest
-from pathlib import Path
 from omero_cli_transfer import ArcPacker
 import pandas as pd
 
 import os
-import tarfile
-import shutil
 
 
 class TestArcPacker(AbstractArcTest):
-    @pytest.fixture(scope="function")
-    def path_arc_test_data(self, project_1, request):
-        path_to_arc_test_data = (
-            Path(__file__).parent.parent / "data/arc_test_data"
-        )
-        os.makedirs(path_to_arc_test_data, exist_ok=True)
-
-        if request.config.option.skip_create_arc_test_data:
-            # if pytest is used with option --not-create-arc-test-data
-            return path_to_arc_test_data
-
-        shutil.rmtree(path_to_arc_test_data)
-        os.makedirs(path_to_arc_test_data, exist_ok=True)
-        project_identifier = f"Project:{project_1.id._val}"
-        path_to_arc_test_dataset_1 = path_to_arc_test_data / "project_1"
-        args = self.args + [
-            "pack",
-            project_identifier,
-            str(path_to_arc_test_dataset_1),
-        ]
-        self.cli.invoke(args)
-
-        with tarfile.open(path_to_arc_test_dataset_1.with_suffix(".tar")) as f:
-            f.extractall(path_to_arc_test_dataset_1)
-        os.remove(path_to_arc_test_dataset_1.with_suffix(".tar"))
-
-        return path_to_arc_test_data
-
-    @pytest.fixture(scope="function")
-    def path_omero_data_1(self, path_arc_test_data):
-        return path_arc_test_data / "project_1"
-
     def test_arc_packer_read_omedata(self, path_omero_data_1, tmp_path):
         ap = ArcPacker(tmp_path / "my_arc", path_omero_data_1)
         assert ap.ome is not None
@@ -156,3 +121,6 @@ class TestArcPacker(AbstractArcTest):
 
         ap._read_mapping_config()
         assert ap.mapping_config is not None
+
+    def test_czi(self, path_omero_data_czi):
+        pass

@@ -26,6 +26,7 @@ from generate_xml import populate_xml_folder
 from generate_omero_objects import populate_omero
 
 from arc_packer import ArcPacker
+from omero_project import OmeroProject
 
 import ezomero
 from ome_types.model import CommentAnnotation, OME
