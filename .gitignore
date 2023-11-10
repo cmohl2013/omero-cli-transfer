@@ -51,7 +51,7 @@ test/data/valid_single_project/
 test/data/valid_single_image/
 test/integration/ice.config
 test/data/prepare/transfer.xml
-test/data/arc_test_data
+test/data/arc_test_data/packed_projects
 
 
 tmp_folder/
