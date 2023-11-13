@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import yaml
 import importlib
+import json
 
 if importlib.util.find_spec("pandas"):
     import pandas as pd
@@ -155,6 +156,23 @@ class ArcPacker(object):
             )
             img_data.append(pd.concat([img_identifiers, metadata]))
         return pd.concat(img_data, axis=1).T.set_index("filename")
+
+    def _add_original_metadata(self):
+        for assay_identifier in self.assay_identifiers:
+            ome_dataset_id = self.assay_identifiers[assay_identifier]
+            for ome_image_id in self.omero_project.image_ids(ome_dataset_id):
+                metadata = self.omero_project.original_image_metadata(
+                    ome_image_id
+                )
+                id = ome_image_id.split(":")[1]
+                savepath = self.path_to_arc_repo / (
+                    f"assays/{assay_identifier}"
+                    f"/protocols/ImageID{id}_metadata.json"
+                )
+                with open(savepath, "w") as f:
+                    json.dump(metadata, f, indent=4)
+                pass
+        pass
 
     def _add_image_metadata(self):
         for assay_identifier in self.assay_identifiers:

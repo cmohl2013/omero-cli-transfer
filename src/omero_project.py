@@ -1,16 +1,6 @@
 from pathlib import Path
 from ome_types import from_xml
 from generate_xml import list_file_ids
-import importlib
-
-if importlib.util.find_spec("pandas"):
-    import pandas as pd
-else:
-    raise ImportError(
-        "Could not import pandas library. Make sure to "
-        "install omero-cli-transfer with the optional "
-        "[arc] addition"
-    )
 
 
 class OmeroProject(object):
@@ -91,7 +81,9 @@ class OmeroProject(object):
         )
 
         out = {
-            "image_filename": self.image_filename(image_id, abspath=False),
+            "image_filename": str(
+                self.image_filename(image_id, abspath=False)
+            ),
             "series_metadata": series_metadata,
             "global_metadata": global_metadata,
         }

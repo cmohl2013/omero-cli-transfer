@@ -126,5 +126,24 @@ class TestArcPacker(AbstractArcTest):
         ap._read_mapping_config()
         assert ap.mapping_config is not None
 
-    def test_czi(self, path_omero_data_czi):
-        pass
+    def test_original_metadata(self, path_omero_data_czi, tmp_path):
+        path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_czi, self.gw)
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            omero_project=p,
+        )
+        ap.create_arc_repo()
+        ap._add_original_metadata()
+
+        for dataset_id in p.dataset_ids():
+            dataset = p.dataset(dataset_id)
+            folder = (
+                path_to_arc_repo
+                / f"assays/{dataset.name.lower().replace(' ','-')}/protocols"
+            )
+            for image_id in p.image_ids(dataset_id):
+                id = image_id.split(":")[1]
+                metadata_filepath = folder / f"ImageID{id}_metadata.json"
+                print(metadata_filepath)
+                assert metadata_filepath.exists()
