@@ -12,27 +12,20 @@ assay:
     measurementtype: "Microscopy"
   sheets:
     "Image Files":
-      columns:
-        image.id:
-          target_colname: ome_id
-        image.name:
-          target_colname: Name
-        image.description:
-          target_colname: Description
-        image.id:
-          target_colname: image_filename
-          augmentation_method: ome_image_filename_for_image_id
+      source_objects: images
+      target_columns:
+        - target_colname: ome_id
+          source_attribute: id
+        - target_colname: Name 
+          source_attribute: name   
+        - target_colname: Description
+          source_attribute: description
+        - target_colname: Filename
+          source_attribute: id
+          augmentation_method: image_filename
           args:
-            skip_path: True
-    "Image Metadata":
-      columns:
-        image.id:
-          target_colname: image_filename
-          augmentation_method: ome_image_filename_for_image_id
-          args:
-            skip_path: True
-      column_collections: image.pixels
-        
+            abspath: False
+    
 
 
         

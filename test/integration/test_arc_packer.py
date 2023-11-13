@@ -134,7 +134,7 @@ class TestArcPacker(AbstractArcTest):
             omero_project=p,
         )
         ap.create_arc_repo()
-        ap._add_original_metadata()
+        # ap._add_original_metadata()
 
         for dataset_id in p.dataset_ids():
             dataset = p.dataset(dataset_id)
@@ -147,3 +147,19 @@ class TestArcPacker(AbstractArcTest):
                 metadata_filepath = folder / f"ImageID{id}_metadata.json"
                 print(metadata_filepath)
                 assert metadata_filepath.exists()
+
+    def test_generate_isa_assay_tables(self, path_omero_data_czi, tmp_path):
+        path_to_arc_repo = tmp_path / "my_arc"
+        p = OmeroProject(path_omero_data_czi, self.gw)
+        ap = ArcPacker(
+            path_to_arc_repo=path_to_arc_repo,
+            omero_project=p,
+        )
+        ap.create_arc_repo()
+
+        dataset_id = p.dataset_ids()[0]
+        tables = ap.isa_assay_tables(dataset_id)
+        table = tables[0]
+        print(table)
+        for col in table.columns:
+            assert col in ["ome_id", "Name", "Description", "Filename"]
