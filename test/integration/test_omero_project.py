@@ -38,8 +38,12 @@ class TestOmeroProject(AbstractArcTest):
         for image_id in p.image_ids(dataset_id):
             metadata = p.original_image_metadata(image_id)
             if p.image_filename(image_id).suffix == ".czi":
-                assert len(metadata) == 10129
+                assert len(metadata["series_metadata"]) == 10129
+                assert metadata["global_metadata"] is None
             elif p.image_filename(image_id).suffix == ".tiff":
-                assert metadata.empty
+                assert metadata["global_metadata"] is None
+                assert metadata["series_metadata"] is None
+
             elif p.image_filename(image_id).suffix == ".lif":
-                assert len(metadata) == 432
+                assert metadata["series_metadata"] is None
+                assert len(metadata["global_metadata"]) == 432

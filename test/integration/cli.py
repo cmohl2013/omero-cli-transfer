@@ -142,12 +142,10 @@ class AbstractArcTest(AbstractCLITest):
 
         def _add_local_image_file(path_to_img_file):
             assert path_to_img_file.exists()
-
-            id = self.import_image(path_to_img_file)[0]
-
-            container_service = self.client.getSession().getContainerService()
-            image = container_service.getImages("Image", [int(id)], None)[0]
-            self.link(dataset, image)
+            target_str = f"Dataset:{dataset.id._val}"
+            self.import_image(
+                path_to_img_file, extra_args=["--target", target_str]
+            )
 
         path_to_img_file = (
             Path(__file__).parent.parent

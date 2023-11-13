@@ -77,19 +77,23 @@ class OmeroProject(object):
         return self.path_to_xml_source / rel_path
 
     def original_image_metadata(self, image_id):
+        # there should be somewhere metadata parsed to ome model
+        # https://forum.image.sc/t/harmonization-of-image-metadata-for-different-file-formats-omero-mde/50827
         image_id_int = int(image_id.split(":")[1])
         image_obj = self.conn.getObject("Image", image_id_int)
-        metadata_ls = image_obj.loadOriginalMetadata()
+        _, series_metadata, global_metadata = image_obj.loadOriginalMetadata()
 
-        out = []
-        for metadata in metadata_ls:
-            if metadata is None:
-                continue
-            if len(metadata) == 0:
-                out.append(pd.Series())
-            else:
-                out.append(pd.DataFrame(metadata).set_index(0)[1])
+        series_metadata = (
+            dict(series_metadata) if len(series_metadata) > 0 else None
+        )
+        global_metadata = (
+            dict(global_metadata) if len(global_metadata) > 0 else None
+        )
 
-        out = pd.concat(out, axis=0)
-        out.name = "Microscope Settings"
+        out = {
+            "image_filename": self.image_filename(image_id, abspath=False),
+            "series_metadata": series_metadata,
+            "global_metadata": global_metadata,
+        }
+
         return out
