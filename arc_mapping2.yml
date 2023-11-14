@@ -1,0 +1,53 @@
+isa_study:
+  ome_object: project
+  isa_attributes:
+    identifier: 
+      ome_getter: getName().lower().replace(" ", "-")
+    title:
+      ome_getter: getName()
+isa_assay:
+  ome_object: dataset
+  isa_attributes:
+    identifier:
+      ome_getter: getName().lower().replace(" ", "-")
+    title:
+      ome_getter: getName()
+    measurementtype:
+      default: "Microscopy"
+      ome_getter: getAnnotations(filter="namespace == 'isa.assay'")[0].getValue("measurementtype")
+  isa_sheets:
+    "Image Files":
+      ome_objecs: Image
+      isa_columns:
+        "Image ID":
+          ome_getter: getId()
+        Name:
+          ome_getter: getName()
+        Description:
+          ome_getter: getDescription()
+        Filename:
+          ome_getter: getID()
+          augmentation_method: image_filename(abspath=False)
+    "Image Metadata":
+      ome_objects: Image
+      isa_columns:
+        "Image ID":
+          ome_getter: getID()
+        "Image Size X":
+          ome_getter: getSizeX()
+        "Image Size Y":
+          ome_getter: getSizeY()
+        "Image Size Z":
+          ome_getter: getSizeZ()
+        "Pixel Size X":
+          ome_getter: getPixelSizeX.getValue()
+        "Pixel Size Y":
+          ome_getter: getPixelSizeY.getValue()
+        "Pixel Size Z":
+          ome_getter: getPixelSizeZ.getValue()    
+        "Pixel Size Unit":
+          ome_getter: getPixelSizeX.getValue(units=True).getSymol()  
+
+
+              
+

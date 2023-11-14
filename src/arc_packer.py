@@ -5,6 +5,7 @@ import shutil
 import yaml
 import importlib
 import json
+from arc_mapping import IsaStudyMapper, IsaAssayMapper
 
 if importlib.util.find_spec("pandas"):
     import pandas as pd
@@ -21,22 +22,24 @@ def fmt_identifier(title: str) -> str:
 
 
 class ArcPacker(object):
-    def __init__(self, path_to_arc_repo: Path, omero_project):
+    def __init__(
+        self, ome_object, path_to_arc_repo: Path, image_filenames_mapping, conn
+    ):
+        self.obj = ome_object  # must be a project
         self.path_to_arc_repo = path_to_arc_repo
-        self.omero_project = omero_project
-        self._read_mapping_config()
+        self.conn = conn
+        self.image_filenames_mapping = image_filenames_mapping
 
-    def _read_mapping_config(self):
-        path = Path(__file__).parent.parent / "arc_mapping.yml"
-
-        with open(path, "r") as f:
-            self.mapping_config = yaml.safe_load(f)
+        self.isa_assay_mappers = []
 
     def create_arc_repo(self):
         self.initialize_arc_repo()
         self._create_study()
         self._create_assays()
-        for assay_identifier in self.assay_identifiers:
+        for assay_mapper in self.isa_assay_mappers:
+            assay_identifier = assay_mapper.isa_attributes_mapping[
+                "assayidentifier"
+            ]
             self._add_image_data_for_assay(assay_identifier)
             self._add_original_metadata_for_assay(assay_identifier)
 
@@ -62,27 +65,17 @@ class ArcPacker(object):
         )
 
     def _create_study(self):
-        args_from_config = self.mapping_config["study"]["arc_commander_args"]
-        project = self.omero_project.project
+        ome_project = self.obj
 
-        study_title = project.name
-        self.study_identifier = fmt_identifier(study_title)
+        mapper = IsaStudyMapper(ome_project)
+
         args = ["arc", "s", "add"]
-        for key in args_from_config:
-            option_arg_string = f"--{key}"
-            args.append(option_arg_string)
-            value = args_from_config[key]
-            if isinstance(value, dict):
-                for func_arg_name in value.keys():
-                    augmentation_func_name = value[func_arg_name][
-                        "augmentation_method"
-                    ]
-                    augmentation_func = eval(augmentation_func_name)
-                    augmented_value = augmentation_func(eval(func_arg_name))
-                    args.append(augmented_value)
+        for isa_attribute in mapper.isa_attributes:
+            option = f"--{isa_attribute}"
+            value = mapper.isa_attributes[isa_attribute]
+            args.append(option)
+            args.append(value)
 
-            else:
-                args.append(eval(args_from_config[key]))
         subprocess.run(args, cwd=self.path_to_arc_repo)
 
     def isa_assay_tables(self, dataset_id):
@@ -128,26 +121,28 @@ class ArcPacker(object):
         return tables
 
     def _create_assays(self):
-        measurement_type = "Microscopy"
+        ome_project = self.obj
+        project_id = ome_project.getId()
+        study_mapper = IsaStudyMapper(ome_project)
 
-        self.assay_identifiers = {}
-        for dataset in self.omero_project.datasets:
-            assay_identifier = fmt_identifier(dataset.name)
-            self.assay_identifiers[assay_identifier] = dataset.id
-            subprocess.run(
-                [
-                    "arc",
-                    "a",
-                    "add",
-                    "--studyidentifier",
-                    self.study_identifier,
-                    "--assayidentifier",
-                    assay_identifier,
-                    "--measurementtype",
-                    measurement_type,
-                ],
-                cwd=self.path_to_arc_repo,
-            )
+        def _filename_for_image(image_id):
+            return self.image_filenames_mapping[f"Image:{image_id}"]
+
+        ome_datasets = self.conn.getObjects(
+            "Dataset", opts={"Project": project_id}
+        )
+        for dataset in ome_datasets:
+            mapper = IsaAssayMapper(dataset, _filename_for_image)
+            self.isa_assay_mappers.append(mapper)
+            args = ["arc", "a", "add"]
+            args.append("--studyidentifier")
+            args.append(study_mapper.isa_attributes["identifier"])
+            for isa_attribute in mapper.isa_attributes_mapping:
+                option = f"--{isa_attribute}"
+                value = mapper.isa_attributes_mapping[isa_attribute]
+                args.append(option)
+                args.append(value)
+            subprocess.run(args, cwd=self.path_to_arc_repo)
 
     def isa_assay_filename(self, assay_identifier):
         assert assay_identifier in self.assay_identifiers

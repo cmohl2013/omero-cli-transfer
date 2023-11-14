@@ -543,9 +543,12 @@ class TransferControl(GraphControl):
             print(f"Creating or updating ARC repository at {folder}")
 
             arc_packer = ArcPacker(
+                ome_object=obj,
                 path_to_arc_repo=Path(tar_path),
-                omero_project=OmeroProject(Path(folder), self.gateway),
+                image_filenames_mapping=path_id_dict,
+                conn=self.gateway,
             )
+
             arc_packer.create_arc_repo()
 
         else:

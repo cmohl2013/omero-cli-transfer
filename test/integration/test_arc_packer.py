@@ -63,7 +63,6 @@ class TestArcPacker(AbstractArcTest):
 
         assert (path_to_arc_repo / "assays/my-first-assay").exists()
         assert (path_to_arc_repo / "assays/my-second-assay").exists()
-        # assert (path_to_arc_repo / "studies/study_1/isa.study.xlsx").exists()
 
     def test_arc_packer_add_image_data_for_assay(
         self, path_omero_data_czi, tmp_path
@@ -158,7 +157,7 @@ class TestArcPacker(AbstractArcTest):
         ap.create_arc_repo()
 
         dataset_id = p.dataset_ids()[0]
-        tables = ap.isa_assay_tables(dataset_id)
+        tables = ap.isa_assay_table(dataset_id)
         table = tables[0]
         print(table)
         for col in table.columns:
