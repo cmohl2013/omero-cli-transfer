@@ -1,9 +1,21 @@
+import importlib
+
+if importlib.util.find_spec("pandas"):
+    import pandas as pd
+else:
+    raise ImportError(
+        "Could not import pandas library. Make sure to "
+        "install omero-cli-transfer with the optional "
+        "[arc] addition"
+    )
+
+
 class IsaStudyMapper:
     def __init__(self, ome_project):
         self.obj = ome_project
         self.isa_attributes = {
-            "identifier": ome_project.getName()._val.lower().replace(" ", "-"),
-            "title": ome_project.getName()._val,
+            "identifier": ome_project.getName().lower().replace(" ", "-"),
+            "title": ome_project.getName(),
         }
 
 
@@ -47,6 +59,12 @@ class IsaAssaySheetImageFilesMapper:
         }
         return isa_column_mapping
 
+    def tbl(self, images):
+        rows = [self.isa_column_mapping(image) for image in images]
+        df = pd.DataFrame(rows)
+        df.name = self.sheet_name
+        return df
+
 
 class IsaAssaySheetImageMetadataMapper:
     def __init__(self, ome_dataset):
@@ -54,16 +72,26 @@ class IsaAssaySheetImageMetadataMapper:
         self.ome_dataset = ome_dataset
 
     def isa_column_mapping(self, image):
+        def _pixel_unit(image):
+            pix = image.getPixelSizeX(units=True)
+            if pix is None:
+                return
+            return pix.getUnit()
+
         isa_column_mapping = {
             "Image ID": image.getId(),
             "Image Size X": image.getSizeX(),
             "Image Size Y": image.getSizeY(),
             "Image Size Z": image.getSizeZ(),
-            "Pixel Size X": image.getPixelSizeX.getValue(),
-            "Pixel Size Y": image.getPixelSizeY.getValue(),
-            "Pixel Size Z": image.getPixelSizeZ.getValue(),
-            "Pixel Size Unit": image.getPixelSizeX.getValue(
-                units=True
-            ).getSymol(),
+            "Pixel Size X": image.getPixelSizeX(),
+            "Pixel Size Y": image.getPixelSizeY(),
+            "Pixel Size Z": image.getPixelSizeZ(),
+            "Pixel Size Unit": _pixel_unit(image),
         }
         return isa_column_mapping
+
+    def tbl(self, images):
+        rows = [self.isa_column_mapping(image) for image in images]
+        df = pd.DataFrame(rows)
+        df.name = self.sheet_name
+        return df

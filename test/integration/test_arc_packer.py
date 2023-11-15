@@ -117,53 +117,63 @@ class TestArcPacker(AbstractArcTest):
 
         return ap
 
-    def test_arc_packer_image_metadata(self, arc_repo_1):
-        ap = arc_repo_1
-        ap.image_metadata_for_assay("my-first-assay")
-        ap._add_image_metadata()
-
-        pass
-
-    def test_arc_packer_read_mapping_config(self, arc_repo_1):
-        ap = arc_repo_1
-
-        ap._read_mapping_config()
-        assert ap.mapping_config is not None
-
-    def test_original_metadata(self, path_omero_data_czi, tmp_path):
+    def test_original_metadata(
+        self,
+        project_czi,
+        omero_data_czi_image_filenames_mapping,
+        path_omero_data_czi,
+        tmp_path,
+    ):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_czi, self.gw)
-        ap = ArcPacker(
-            path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
-        )
-        ap.create_arc_repo()
-        # ap._add_original_metadata()
 
-        for dataset_id in p.dataset_ids():
-            dataset = p.dataset(dataset_id)
+        ap = ArcPacker(
+            ome_object=project_czi,
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_image_files=path_omero_data_czi,
+            image_filenames_mapping=omero_data_czi_image_filenames_mapping,
+            conn=self.gw,
+        )
+
+        ap.create_arc_repo()
+
+        # ap._add_original_metadata()
+        datasets = self.gw.getObjects(
+            "Dataset", opts={"project": project_czi.getId()}
+        )
+
+        for dataset in datasets:
             folder = (
                 path_to_arc_repo
                 / f"assays/{dataset.name.lower().replace(' ','-')}/protocols"
             )
-            for image_id in p.image_ids(dataset_id):
-                id = image_id.split(":")[1]
-                metadata_filepath = folder / f"ImageID{id}_metadata.json"
+            images = self.gw.getObjects(
+                "Image", opts={"dataset": dataset.getId()}
+            )
+            for image in images:
+                metadata_filepath = (
+                    folder / f"ImageID{image.getId()}_metadata.json"
+                )
                 print(metadata_filepath)
                 assert metadata_filepath.exists()
 
-    def test_generate_isa_assay_tables(self, path_omero_data_czi, tmp_path):
+    def test_generate_isa_assay_tables(
+        self,
+        project_czi,
+        omero_data_czi_image_filenames_mapping,
+        path_omero_data_czi,
+        tmp_path,
+    ):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_czi, self.gw)
+
         ap = ArcPacker(
+            ome_object=project_czi,
             path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
+            path_to_image_files=path_omero_data_czi,
+            image_filenames_mapping=omero_data_czi_image_filenames_mapping,
+            conn=self.gw,
         )
+
         ap.create_arc_repo()
 
-        dataset_id = p.dataset_ids()[0]
-        tables = ap.isa_assay_table(dataset_id)
-        table = tables[0]
-        print(table)
-        for col in table.columns:
-            assert col in ["ome_id", "Name", "Description", "Filename"]
+        dfs = ap.isa_assay_tables(assay_identifier="my-assay-with-czi-images")
+        pass

@@ -18,7 +18,7 @@ class TestArcTransfer(AbstractArcTest):
             self.cli.invoke(args)
 
     def test_pack_arc(self, project_1, tmp_path):
-        project_identifier = f"Project:{project_1.id._val}"
+        project_identifier = f"Project:{project_1.getId()}"
         path_to_arc = tmp_path / "my_arc"
         args = self.args + [
             "pack",

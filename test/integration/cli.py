@@ -136,7 +136,7 @@ class AbstractArcTest(AbstractCLITest):
         self.link(project_1, dataset_1)
         self.link(project_1, dataset_2)
 
-        return project_1
+        return self.gw.getObject("Project", project_1.id._val)
 
     @pytest.fixture(scope="function")
     def dataset_czi_1(self):
@@ -181,7 +181,7 @@ class AbstractArcTest(AbstractCLITest):
         self.link(project_czi, dataset_czi_1)
         self.link(project_czi, dataset_1)
 
-        return project_czi
+        return self.gw.getObject("Project", project_czi.id._val)
 
     @pytest.fixture(scope="function")
     def path_arc_test_data(self, project_1, project_czi, request):
@@ -201,7 +201,7 @@ class AbstractArcTest(AbstractCLITest):
             (project_1, "project_1"),
             (project_czi, "project_czi"),
         ]:
-            project_identifier = f"Project:{project.id._val}"
+            project_identifier = f"Project:{project.getId()}"
             path_to_arc_test_dataset = path_to_arc_test_data / project_name
             args = self.args + [
                 "pack",

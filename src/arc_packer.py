@@ -20,6 +20,27 @@ def fmt_identifier(title: str) -> str:
     return title.lower().replace(" ", "-")
 
 
+def original_image_metadata(image):
+    # there should be somewhere metadata parsed to ome model
+    # https://forum.image.sc/t/harmonization-of-image-metadata-for-different-file-formats-omero-mde/50827
+
+    _, series_metadata, global_metadata = image.loadOriginalMetadata()
+
+    series_metadata = (
+        dict(series_metadata) if len(series_metadata) > 0 else None
+    )
+    global_metadata = (
+        dict(global_metadata) if len(global_metadata) > 0 else None
+    )
+
+    out = {
+        "series_metadata": series_metadata,
+        "global_metadata": global_metadata,
+    }
+
+    return out
+
+
 class ArcPacker(object):
     def __init__(
         self,
@@ -84,46 +105,16 @@ class ArcPacker(object):
 
         subprocess.run(args, cwd=self.path_to_arc_repo)
 
-    def isa_assay_tables(self, dataset_id):
+    def isa_assay_tables(self, assay_identifier):
+        dataset = self.ome_dataset_for_isa_assay[assay_identifier]
+        assay_mapper = IsaAssayMapper(dataset, self.image_filename)
         tables = []
-        for sheetname in self.mapping_config["assay"]["sheets"]:
-            col_mapping = self.mapping_config["assay"]["sheets"][sheetname][
-                "target_columns"
-            ]
-            source_object_name = self.mapping_config["assay"]["sheets"][
-                sheetname
-            ]["source_objects"]
-
-            obj_getter_func = self.omero_project.__getattribute__(
-                source_object_name
-            )
-            objs = obj_getter_func(dataset_id)
-
-            tbl = {}
-            for col_spec in col_mapping:
-                target_vals = []
-                for obj in objs:
-                    source_attribute = obj.__getattribute__(
-                        col_spec["source_attribute"]
-                    )
-                    augmentation_method_name = col_spec.get(
-                        "augmentation_method", None
-                    )
-                    if augmentation_method_name is not None:
-                        augmentation_method = (
-                            self.omero_project.__getattribute__(
-                                augmentation_method_name
-                            )
-                        )
-                        kwargs = col_spec.get("args", {})
-                        target_val = augmentation_method(
-                            source_attribute, **kwargs
-                        )
-                    else:
-                        target_val = source_attribute
-                    target_vals.append(target_val)
-                tbl[col_spec["target_colname"]] = target_vals
-            tables.append(pd.DataFrame(tbl))
+        images = self.conn.getObjects(
+            "Image", opts={"dataset": dataset.getId()}
+        )
+        images = [im for im in images]
+        for sheet_mapper in assay_mapper.isa_sheets:
+            tables.append(sheet_mapper.tbl(images))
         return tables
 
     def _create_assays(self):
@@ -214,13 +205,20 @@ class ArcPacker(object):
     def _add_original_metadata_for_assay(self, assay_identifier):
         """writes json files with original metadata"""
 
-        ome_dataset_id = self.assay_identifiers[assay_identifier]
-        for ome_image_id in self.omero_project.image_ids(ome_dataset_id):
-            metadata = self.omero_project.original_image_metadata(ome_image_id)
-            id = ome_image_id.split(":")[1]
+        dataset = self.ome_dataset_for_isa_assay[assay_identifier]
+        images = self.conn.getObjects(
+            "Image", opts={"dataset": dataset.getId()}
+        )
+        for image in images:
+            metadata = original_image_metadata(image)
+            metadata["image_id"] = image.getId()
+            metadata["image_filename"] = self.image_filename(
+                image.getId(), abspath=False
+            ).name
+
             savepath = self.path_to_arc_repo / (
                 f"assays/{assay_identifier}"
-                f"/protocols/ImageID{id}_metadata.json"
+                f"/protocols/ImageID{image.getId()}_metadata.json"
             )
             with open(savepath, "w") as f:
                 json.dump(metadata, f, indent=4)
