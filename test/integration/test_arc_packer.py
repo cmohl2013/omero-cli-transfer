@@ -1,16 +1,18 @@
 from integration.cli import AbstractArcTest
 import pytest
-from omero_cli_transfer import ArcPacker, OmeroProject
+from omero_cli_transfer import ArcPacker
 import pandas as pd
 
 
 class TestArcPacker(AbstractArcTest):
-    def test_arc_packer_initialize(self, path_omero_data_1, tmp_path):
+    def test_arc_packer_initialize(self, project_czi, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
+            ome_object=project_czi,
             path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
+            path_to_image_files=None,
+            image_filenames_mapping=None,
+            conn=self.client,
         )
         ap.initialize_arc_repo()
         df = pd.read_excel(
@@ -24,12 +26,14 @@ class TestArcPacker(AbstractArcTest):
         )
         assert df.loc["Investigation Title"].iloc[0] == "Test Investigation 1"
 
-    def test_arc_packer_create_studies(self, path_omero_data_1, tmp_path):
+    def test_arc_packer_create_study(self, project_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
+            ome_object=project_1,
             path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
+            path_to_image_files=None,
+            image_filenames_mapping=None,
+            conn=self.gw,
         )
         ap.initialize_arc_repo()
 
@@ -49,12 +53,14 @@ class TestArcPacker(AbstractArcTest):
         assert df.loc["Study Title"].iloc[0] == "My First Study"
         assert df.loc["Study Identifier"].iloc[0] == "my-first-study"
 
-    def test_arc_packer_create_assays(self, path_omero_data_1, tmp_path):
+    def test_arc_packer_create_assays(self, project_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1, self.gw)
         ap = ArcPacker(
+            ome_object=project_1,
             path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
+            path_to_image_files=None,
+            image_filenames_mapping=None,
+            conn=self.gw,
         )
         ap.initialize_arc_repo()
 
@@ -65,13 +71,20 @@ class TestArcPacker(AbstractArcTest):
         assert (path_to_arc_repo / "assays/my-second-assay").exists()
 
     def test_arc_packer_add_image_data_for_assay(
-        self, path_omero_data_czi, tmp_path
+        self,
+        project_czi,
+        path_omero_data_czi,
+        omero_data_czi_image_filenames_mapping,
+        tmp_path,
     ):
         path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_czi, self.gw)
+
         ap = ArcPacker(
+            ome_object=project_czi,
             path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
+            path_to_image_files=path_omero_data_czi,
+            image_filenames_mapping=omero_data_czi_image_filenames_mapping,
+            conn=self.gw,
         )
         ap.initialize_arc_repo()
 
@@ -82,21 +95,13 @@ class TestArcPacker(AbstractArcTest):
             assay_identifier="my-assay-with-czi-images"
         )
 
-        dataset_id = ap.assay_identifiers["my-first-assay"]
-        for image_id in ap.omero_project.image_ids(dataset_id):
-            relpath = ap.omero_project.image_filename(image_id, abspath=False)
+        dataset = ap.ome_dataset_for_isa_assay["my-first-assay"]
+        for image in self.gw.getObjects(
+            "Image", opts={"dataset": dataset.getId()}
+        ):
+            relpath = ap.image_filename(image.getId(), abspath=False)
             abspath = (
                 tmp_path / "my_arc/assays/my-first-assay/dataset" / relpath
-            )
-            assert abspath.exists()
-
-        dataset_id = ap.assay_identifiers["my-assay-with-czi-images"]
-        for image_id in ap.omero_project.image_ids(dataset_id):
-            relpath = ap.omero_project.image_filename(image_id, abspath=False)
-            abspath = (
-                tmp_path
-                / "my_arc/assays/my-assay-with-czi-images/dataset"
-                / relpath
             )
             assert abspath.exists()
 

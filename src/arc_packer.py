@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
-import yaml
 import importlib
 import json
 from arc_mapping import IsaStudyMapper, IsaAssayMapper
@@ -23,14 +22,21 @@ def fmt_identifier(title: str) -> str:
 
 class ArcPacker(object):
     def __init__(
-        self, ome_object, path_to_arc_repo: Path, image_filenames_mapping, conn
+        self,
+        ome_object,
+        path_to_arc_repo: Path,
+        path_to_image_files,
+        image_filenames_mapping,
+        conn,
     ):
         self.obj = ome_object  # must be a project
         self.path_to_arc_repo = path_to_arc_repo
         self.conn = conn
         self.image_filenames_mapping = image_filenames_mapping
+        self.path_to_image_files = path_to_image_files
 
         self.isa_assay_mappers = []
+        self.ome_dataset_for_isa_assay = {}
 
     def create_arc_repo(self):
         self.initialize_arc_repo()
@@ -129,7 +135,7 @@ class ArcPacker(object):
             return self.image_filenames_mapping[f"Image:{image_id}"]
 
         ome_datasets = self.conn.getObjects(
-            "Dataset", opts={"Project": project_id}
+            "Dataset", opts={"project": project_id}
         )
         for dataset in ome_datasets:
             mapper = IsaAssayMapper(dataset, _filename_for_image)
@@ -143,6 +149,9 @@ class ArcPacker(object):
                 args.append(option)
                 args.append(value)
             subprocess.run(args, cwd=self.path_to_arc_repo)
+            self.ome_dataset_for_isa_assay[
+                mapper.isa_attributes_mapping["assayidentifier"]
+            ] = dataset
 
     def isa_assay_filename(self, assay_identifier):
         assert assay_identifier in self.assay_identifiers
@@ -152,23 +161,30 @@ class ArcPacker(object):
         assert path.exists()
         return path
 
+    def image_filename(self, image_id, abspath=True):
+        image_id_str = f"Image:{image_id}"
+
+        rel_path = Path(self.image_filenames_mapping[image_id_str])
+
+        if not abspath:
+            return rel_path
+        return self.path_to_image_files / rel_path
+
     def _add_image_data_for_assay(self, assay_identifier):
-        assert (
-            assay_identifier in self.assay_identifiers
-        ), f"assay {assay_identifier} does not exist: {self.assay_identifiers}"
+        # ome_dataset_id = self.assay_identifiers[assay_identifier]
 
-        pass
-        ome_dataset_id = self.assay_identifiers[assay_identifier]
-
+        assert assay_identifier in self.ome_dataset_for_isa_assay
         dest_image_folder = (
             self.path_to_arc_repo / f"assays/{assay_identifier}/dataset"
         )
-        for image_id in self.omero_project.image_ids(ome_dataset_id):
-            img_filepath_abs = self.omero_project.image_filename(
-                image_id, abspath=True
-            )
-            img_fileppath_rel = self.omero_project.image_filename(
-                image_id, abspath=False
+        ds = self.ome_dataset_for_isa_assay[assay_identifier]
+
+        for image in self.conn.getObjects(
+            "Image", opts={"dataset": ds.getId()}
+        ):
+            img_filepath_abs = self.image_filename(image.getId(), abspath=True)
+            img_fileppath_rel = self.image_filename(
+                image.getId(), abspath=False
             )
             target_path = dest_image_folder / img_fileppath_rel
             os.makedirs(target_path.parent, exist_ok=True)

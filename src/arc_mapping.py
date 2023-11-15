@@ -2,8 +2,8 @@ class IsaStudyMapper:
     def __init__(self, ome_project):
         self.obj = ome_project
         self.isa_attributes = {
-            "identifier": self.obj.getName().lower().replace(" ", "-"),
-            "title": self.obj.getName(),
+            "identifier": ome_project.getName()._val.lower().replace(" ", "-"),
+            "title": ome_project.getName()._val,
         }
 
 
@@ -12,16 +12,13 @@ class IsaAssayMapper:
         self.image_filename_getter = image_filename_getter
 
         def _measurementtype():
-            # measurementtype = (
-            #     ome_dataset.getAnnotations(filter="namespace == 'isa.assay'")[
-            #         0
-            #     ].getValue("measurementtype"),
-            # )
-            # if measurementtype is None:
             return "Microscopy"
 
+        def _fmt_identifier(name):
+            return name.lower().replace(" ", "-")
+
         self.isa_attributes_mapping = {
-            "assayidentifier": ome_dataset.getName().lower().replace(" ", "-"),
+            "assayidentifier": _fmt_identifier(ome_dataset.getName()),
             "measurementtype": _measurementtype(),
         }
 

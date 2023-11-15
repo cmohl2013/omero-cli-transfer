@@ -20,6 +20,8 @@ from pathlib import Path
 import os
 import tarfile
 import shutil
+from ome_types import from_xml
+from generate_xml import list_file_ids
 
 
 class AbstractCLITest(ITest):
@@ -223,6 +225,13 @@ class AbstractArcTest(AbstractCLITest):
     @pytest.fixture(scope="function")
     def path_omero_data_czi(self, path_arc_test_data):
         return path_arc_test_data / "project_czi"
+
+    @pytest.fixture(scope="function")
+    def omero_data_czi_image_filenames_mapping(self, path_omero_data_czi):
+        with open(path_omero_data_czi / "transfer.xml") as f:
+            xmldata = f.read()
+        ome = from_xml(xmldata)
+        return list_file_ids(ome)
 
 
 class RootCLITest(AbstractCLITest):

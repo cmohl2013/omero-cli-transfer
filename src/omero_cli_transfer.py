@@ -26,7 +26,6 @@ from generate_xml import populate_xml_folder
 from generate_omero_objects import populate_omero
 
 from arc_packer import ArcPacker
-from omero_project import OmeroProject
 
 import ezomero
 from ome_types.model import CommentAnnotation, OME
@@ -546,6 +545,7 @@ class TransferControl(GraphControl):
                 ome_object=obj,
                 path_to_arc_repo=Path(tar_path),
                 image_filenames_mapping=path_id_dict,
+                path_to_image_files=Path(folder),
                 conn=self.gateway,
             )
 
