@@ -106,18 +106,7 @@ class TestArcPacker(AbstractArcTest):
             assert abspath.exists()
 
     @pytest.fixture()
-    def arc_repo_1(self, path_omero_data_1, tmp_path):
-        path_to_arc_repo = tmp_path / "my_arc"
-        p = OmeroProject(path_omero_data_1, self.gw)
-        ap = ArcPacker(
-            path_to_arc_repo=path_to_arc_repo,
-            omero_project=p,
-        )
-        ap.create_arc_repo()
-
-        return ap
-
-    def test_original_metadata(
+    def arc_repo_1(
         self,
         project_czi,
         omero_data_czi_image_filenames_mapping,
@@ -135,6 +124,10 @@ class TestArcPacker(AbstractArcTest):
         )
 
         ap.create_arc_repo()
+        return ap
+
+    def test_original_metadata(self, arc_repo_1, project_czi):
+        ap = arc_repo_1
 
         # ap._add_original_metadata()
         datasets = self.gw.getObjects(
@@ -143,7 +136,7 @@ class TestArcPacker(AbstractArcTest):
 
         for dataset in datasets:
             folder = (
-                path_to_arc_repo
+                ap.path_to_arc_repo
                 / f"assays/{dataset.name.lower().replace(' ','-')}/protocols"
             )
             images = self.gw.getObjects(
@@ -158,22 +151,27 @@ class TestArcPacker(AbstractArcTest):
 
     def test_generate_isa_assay_tables(
         self,
-        project_czi,
-        omero_data_czi_image_filenames_mapping,
-        path_omero_data_czi,
-        tmp_path,
+        arc_repo_1,
     ):
-        path_to_arc_repo = tmp_path / "my_arc"
-
-        ap = ArcPacker(
-            ome_object=project_czi,
-            path_to_arc_repo=path_to_arc_repo,
-            path_to_image_files=path_omero_data_czi,
-            image_filenames_mapping=omero_data_czi_image_filenames_mapping,
-            conn=self.gw,
-        )
-
-        ap.create_arc_repo()
+        ap = arc_repo_1
 
         dfs = ap.isa_assay_tables(assay_identifier="my-assay-with-czi-images")
+        for df in dfs:
+            assert not df.empty
+
+    def test_add_isa_assay_sheets(
+        self,
+        arc_repo_1,
+    ):
+        ap = arc_repo_1
+        # ap._add_isa_assay_sheets()
+
+        for assay_identifier in ["my-assay-with-czi-images", "my-first-assay"]:
+            isa_assay_file = (
+                ap.path_to_arc_repo
+                / f"assays/{assay_identifier}/isa.assay.xlsx"
+            )
+            for sheet_name in ["Image Files", "Image Metadata"]:
+                df = pd.read_excel(isa_assay_file, sheet_name=sheet_name)
+                assert not df.empty
         pass

@@ -69,6 +69,7 @@ class ArcPacker(object):
             ]
             self._add_image_data_for_assay(assay_identifier)
             self._add_original_metadata_for_assay(assay_identifier)
+        self._add_isa_assay_sheets()
 
     def initialize_arc_repo(self):
         os.makedirs(self.path_to_arc_repo, exist_ok=False)
@@ -104,18 +105,6 @@ class ArcPacker(object):
             args.append(value)
 
         subprocess.run(args, cwd=self.path_to_arc_repo)
-
-    def isa_assay_tables(self, assay_identifier):
-        dataset = self.ome_dataset_for_isa_assay[assay_identifier]
-        assay_mapper = IsaAssayMapper(dataset, self.image_filename)
-        tables = []
-        images = self.conn.getObjects(
-            "Image", opts={"dataset": dataset.getId()}
-        )
-        images = [im for im in images]
-        for sheet_mapper in assay_mapper.isa_sheets:
-            tables.append(sheet_mapper.tbl(images))
-        return tables
 
     def _create_assays(self):
         ome_project = self.obj
@@ -180,6 +169,31 @@ class ArcPacker(object):
             target_path = dest_image_folder / img_fileppath_rel
             os.makedirs(target_path.parent, exist_ok=True)
             shutil.copy2(img_filepath_abs, target_path)
+
+    def isa_assay_tables(self, assay_identifier):
+        dataset = self.ome_dataset_for_isa_assay[assay_identifier]
+        assay_mapper = IsaAssayMapper(dataset, self.image_filename)
+        tables = []
+        images = self.conn.getObjects(
+            "Image", opts={"dataset": dataset.getId()}
+        )
+        images = [im for im in images]
+        for sheet_mapper in assay_mapper.isa_sheets:
+            tables.append(sheet_mapper.tbl(images))
+        return tables
+
+    def _add_isa_assay_sheets(self):
+        for assay_identifier in self.ome_dataset_for_isa_assay.keys():
+            isa_assay_file = (
+                self.path_to_arc_repo
+                / f"assays/{assay_identifier}/isa.assay.xlsx"
+            )
+            with pd.ExcelWriter(
+                isa_assay_file, engine="openpyxl", mode="a"
+            ) as writer:
+                tables = self.isa_assay_tables(assay_identifier)
+                for table in tables:
+                    table.to_excel(writer, sheet_name=table.name, index=False)
 
     def image_metadata_for_assay(self, assay_identifier):
         ome_dataset_id = self.assay_identifiers[assay_identifier]
