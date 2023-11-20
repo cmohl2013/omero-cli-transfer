@@ -179,7 +179,7 @@ class ArcPacker(object):
         )
         images = [im for im in images]
         for sheet_mapper in assay_mapper.isa_sheets:
-            tables.append(sheet_mapper.tbl(images))
+            tables.append(sheet_mapper.tbl(self.conn))
         return tables
 
     def _add_isa_assay_sheets(self):
@@ -194,27 +194,6 @@ class ArcPacker(object):
                 tables = self.isa_assay_tables(assay_identifier)
                 for table in tables:
                     table.to_excel(writer, sheet_name=table.name, index=False)
-
-    def image_metadata_for_assay(self, assay_identifier):
-        ome_dataset_id = self.assay_identifiers[assay_identifier]
-        img_data = []
-        for image_record in self.omero_project.images(ome_dataset_id):
-            img_filename = self.omero_project.image_filename(
-                image_record.id, abspath=False
-            )
-            metadata = (pd.DataFrame(image_record.pixels).set_index(0)).iloc[
-                :, 0
-            ]
-            img_identifiers = pd.Series(
-                {
-                    "ome_id": image_record.id,
-                    "name": image_record.name,
-                    "description": image_record.description,
-                    "filename": img_filename,
-                }
-            )
-            img_data.append(pd.concat([img_identifiers, metadata]))
-        return pd.concat(img_data, axis=1).T.set_index("filename")
 
     def _add_original_metadata_for_assay(self, assay_identifier):
         """writes json files with original metadata"""
@@ -236,18 +215,3 @@ class ArcPacker(object):
             )
             with open(savepath, "w") as f:
                 json.dump(metadata, f, indent=4)
-
-    def _add_image_metadata(self):
-        for assay_identifier in self.assay_identifiers:
-            df = self.image_metadata_for_assay(
-                assay_identifier=assay_identifier
-            )
-
-            path = self.isa_assay_filename(assay_identifier)
-
-            # book = load_workbook(path)
-            writer = pd.ExcelWriter(path, engine="openpyxl", mode="a")
-            # writer.book = book
-
-            df.to_excel(writer, sheet_name="Image Metadata")
-            writer.close()

@@ -1,5 +1,6 @@
 import importlib
 
+
 if importlib.util.find_spec("pandas"):
     import pandas as pd
 else:
@@ -8,6 +9,22 @@ else:
         "install omero-cli-transfer with the optional "
         "[arc] addition"
     )
+
+
+class AbstractIsaAssaySheetMapper:
+    def __init__(self, ome_dataset):
+        self.ome_dataset = ome_dataset
+
+    def tbl(self, conn):
+        objs = conn.getObjects(
+            self.obj_type, opts={"dataset": self.ome_dataset.getId()}
+        )
+        objs = [obj for obj in objs]
+
+        rows = [self.isa_column_mapping(obj) for obj in objs]
+        df = pd.DataFrame(rows)
+        df.name = self.sheet_name
+        return df
 
 
 class IsaStudyMapper:
@@ -42,11 +59,13 @@ class IsaAssayMapper:
         ]
 
 
-class IsaAssaySheetImageFilesMapper:
+class IsaAssaySheetImageFilesMapper(AbstractIsaAssaySheetMapper):
     def __init__(self, ome_dataset, image_filename_getter):
+        self.obj_type = "Image"
         self.sheet_name = "Image Files"
-        self.ome_dataset = ome_dataset
         self.image_filename_getter = image_filename_getter
+
+        super().__init__(ome_dataset)
 
     def isa_column_mapping(self, image):
         isa_column_mapping = {
@@ -59,17 +78,12 @@ class IsaAssaySheetImageFilesMapper:
         }
         return isa_column_mapping
 
-    def tbl(self, images):
-        rows = [self.isa_column_mapping(image) for image in images]
-        df = pd.DataFrame(rows)
-        df.name = self.sheet_name
-        return df
 
-
-class IsaAssaySheetImageMetadataMapper:
+class IsaAssaySheetImageMetadataMapper(AbstractIsaAssaySheetMapper):
     def __init__(self, ome_dataset):
+        self.obj_type = "Image"
         self.sheet_name = "Image Metadata"
-        self.ome_dataset = ome_dataset
+        super().__init__(ome_dataset)
 
     def isa_column_mapping(self, image):
         def _pixel_unit(image):
@@ -89,9 +103,3 @@ class IsaAssaySheetImageMetadataMapper:
             "Pixel Size Unit": _pixel_unit(image),
         }
         return isa_column_mapping
-
-    def tbl(self, images):
-        rows = [self.isa_column_mapping(image) for image in images]
-        df = pd.DataFrame(rows)
-        df.name = self.sheet_name
-        return df

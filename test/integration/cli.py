@@ -175,6 +175,213 @@ class AbstractArcTest(AbstractCLITest):
         return dataset
 
     @pytest.fixture(scope="function")
+    def ds_with_arc_assay_annotation(self):
+        project = self.make_project(name="My Study with Annotations")
+        dataset = self.make_dataset(name="My Assay with Annotations")
+        self.link(project, dataset)
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY METADATA"
+        annotations = {
+            "Study Identifier": "my-custom-study-title",
+            "Study Title": "My Custom Study Title",
+            "Study Description": (
+                "If the annotation for study title is set, "
+                "this value overwrites the"
+                "default value (default value is the omero project name)"
+            ),
+            "Study Submission Date": "8/11/2022",
+            "Study Public Release Date": "3/3/2023",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY PUBLICATIONS"
+        annotations = {
+            "Study Publication DOI": "10.1038/s41467-022-34205-9",
+            "Study Publication PubMed ID": 678978,
+            "Study Publication Author List": "Mueller M, Langer L L",
+            "Study Publication Title": "HJKIH P9 orchestrates JKLKinase trafficking in mesenchymal cells.",
+            "Study Publication Status": "published",
+            "Study Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Publication Status Term Source REF": "EFO",
+        }
+
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS"
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY FACTORS"
+
+        annotation_namespace = "ARC:ISA:ASSAY:ASSAY METADATA"
+        annotations = {
+            "Measurement Type": "High resolution transmission electron micrograph",
+            "Measurement Type Term Accession Number": "http://purl.obolibrary.org/obo/CHMO_0002125",
+            "Measurement Type Term Source REF": "CHMO",
+            "Technology Type": "transmission electron microscopy",
+            "Technology Type Term Accession Number": "http://www.bioassayontology.org/bao#BAO_0000455",
+            "Technology Type Term Source Ref": "BAO",
+            "Technolology Platform": "JEOL JEM2100Plus",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=dataset,
+        )
+
+        annotation_namespace = "ARC:ISA:ASSAY:ASSAY PERFORMERS"
+        annotations = {
+            "Last Name": "Arno",
+            "First Name": "Mueller",
+            "Email": "arno.mueller@email.com",
+            "Roles": "researcher",
+            "Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Roles Term Source REF": "SCoRO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=dataset,
+        )
+
+        annotation_namespace = "ARC:ISA:ASSAY:ASSAY PERFORMERS"
+        annotations = {
+            "Last Name": "Laura",
+            "First Name": "Langer",
+            "Mid Initials": "L",
+            "Email": "laura.l.langer@email.com",
+            "Phone": "0211-12345",
+            "Roles": "researcher",
+            "Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Roles Term Source REF": "SCoRO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=dataset,
+        )
+
+        # image 1
+        image_tif = self.create_test_image(
+            100,
+            100,
+            1,
+            1,
+            1,
+            self.client.getSession(),
+            name="pixel image 1",
+        )
+        self.link(dataset, image_tif)
+
+        annotation_namespace = "ARC:ISA:ASSAY:my-assay-with-annotations"
+        annotations = {
+            "Source Name": 8894,
+            "Protocol Type": "assay protocol",
+            "TermSourceRef": "DPBO",
+            "TermAccesssionNumber": "https://purl.obolibrary.org/obo/DPBO_1000177",
+            "ProtocolREF": "image_acquisition.md",
+            "Parameter[OperationMode]": "IMAGING",
+            "Parameter[IndicatedMagnification]": 10000,
+            "Parameter[Voltage]": 80000,
+            "TermSourceRef": "UO",
+            "TermAcessionNumber": "http://purl.obolibrary.org/obo/UO_0000218",
+            "Parameter[scanrate]": 1.13,
+            "Unit": "nm",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=image_tif,
+        )
+
+        def _add_local_image_file(path_to_img_file):
+            assert path_to_img_file.exists()
+            target_str = f"Dataset:{dataset.id._val}"
+            pix_ids = self.import_image(
+                path_to_img_file, extra_args=["--target", target_str]
+            )
+            return pix_ids
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
+        )
+        pix_ids = _add_local_image_file(path_to_img_file=path_to_img_file)
+        image_czi = self.gw.getObject("Image", int(pix_ids[0]))
+
+        annotation_namespace = "ARC:ISA:ASSAY:my-assay-with-annotations"
+        annotations = {
+            "Source Name": 7777,
+            "Protocol Type": "assay protocol",
+            "TermSourceRef": "DPBO",
+            "TermAccesssionNumber": "https://purl.obolibrary.org/obo/DPBO_1000177",
+            "ProtocolREF": "image_acquisition.md",
+            "Parameter[OperationMode]": "IMAGING",
+            "Parameter[IndicatedMagnification]": 5000,
+            "Parameter[Voltage]": 60000,
+            "TermSourceRef": "UO",
+            "TermAcessionNumber": "http://purl.obolibrary.org/obo/UO_0000218",
+            "Parameter[scanrate]": 1.17,
+            "Unit": "nm",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=image_czi,
+        )
+        print(self.login_args()[4])
+        pass
+
+    @pytest.fixture(scope="function")
+    def dataset_czi_1(self):
+        dataset = self.make_dataset(name="My Assay with CZI Images")
+
+        def _add_local_image_file(path_to_img_file):
+            assert path_to_img_file.exists()
+            target_str = f"Dataset:{dataset.id._val}"
+            self.import_image(
+                path_to_img_file, extra_args=["--target", target_str]
+            )
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
+        )
+        _add_local_image_file(path_to_img_file=path_to_img_file)
+
+        image_tif = self.create_test_image(
+            100,
+            100,
+            1,
+            1,
+            1,
+            self.client.getSession(),
+            name="another pixel image",
+        )
+        self.link(dataset, image_tif)
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/sted-confocal.lif"
+        )
+        _add_local_image_file(path_to_img_file=path_to_img_file)
+
+        return dataset
+
+    @pytest.fixture(scope="function")
     def project_czi(self, dataset_czi_1, dataset_1):
         project_czi = self.make_project(name="My Study with a CZI Image")
 
