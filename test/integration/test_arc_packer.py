@@ -1,4 +1,4 @@
-from integration.cli import AbstractArcTest
+from abstract_arc_test import AbstractArcTest
 import pytest
 from omero_cli_transfer import ArcPacker
 import pandas as pd
@@ -52,6 +52,57 @@ class TestArcPacker(AbstractArcTest):
 
         assert df.loc["Study Title"].iloc[0] == "My First Study"
         assert df.loc["Study Identifier"].iloc[0] == "my-first-study"
+
+    def test_arc_packer_create_study_with_annotations(
+        self, project_with_arc_assay_annotation, tmp_path
+    ):
+        project = project_with_arc_assay_annotation
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            ome_object=project,
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_image_files=None,
+            image_filenames_mapping=None,
+            conn=self.gw,
+        )
+        ap.initialize_arc_repo()
+
+        ap._create_study()
+
+        assert (path_to_arc_repo / "studies/my-custom-study-id").exists()
+        assert (
+            path_to_arc_repo / "studies/my-custom-study-id/isa.study.xlsx"
+        ).exists()
+
+        df = pd.read_excel(
+            path_to_arc_repo / "studies/my-custom-study-id/isa.study.xlsx",
+            sheet_name="Study",
+            index_col=0,
+        )
+
+        assert df.loc["Study Title"].iloc[0] == "My Custom Study Title"
+        assert df.loc["Study Identifier"].iloc[0] == "my-custom-study-id"
+        assert df.loc["Study Submission Date"].iloc[0] == "8/11/2022"
+        assert df.loc["Study Release Date"].iloc[0] == "3/3/2023"
+
+        assert df.loc["Study Publication PubMed ID"].iloc[0] == 678978
+        assert df.loc["Study Publication PubMed ID"].iloc[1] == 7898961
+
+        assert (
+            df.loc["Study Design Type"].iloc[0]
+            == "Transmission Electron Microscopy"
+        )
+
+        assert df.loc["Study Factor Name"].iloc[0] == "My Factor"
+        assert df.loc["Study Factor Name"].iloc[1] == "My Second Factor"
+
+        assert (
+            df.loc["Study Protocol Name"].iloc[0]
+            == "Cell embedding for electron microscopy"
+        )
+        assert df.loc["Study Protocol Version"].iloc[0] == "0.0.1"
+
+        assert df.loc["Study Person Last Name"].iloc[0] == "Mueller"
 
     def test_arc_packer_create_assays(self, project_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"

@@ -1,4 +1,4 @@
-from cli import AbstractArcTest
+from abstract_arc_test import AbstractArcTest
 import pytest
 
 
