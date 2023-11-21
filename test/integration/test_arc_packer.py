@@ -2,6 +2,7 @@ from abstract_arc_test import AbstractArcTest
 import pytest
 from omero_cli_transfer import ArcPacker
 import pandas as pd
+from arc_mapping import IsaStudyMapper
 
 
 class TestArcPacker(AbstractArcTest):
@@ -52,6 +53,24 @@ class TestArcPacker(AbstractArcTest):
 
         assert df.loc["Study Title"].iloc[0] == "My First Study"
         assert df.loc["Study Identifier"].iloc[0] == "my-first-study"
+
+    def test_isa_study_mapper(
+        self, project_with_arc_assay_annotation, project_1
+    ):
+        p = project_1
+        pa = project_with_arc_assay_annotation
+
+        # mapper_1 = IsaStudyMapper(p)
+        # assert mapper_1.isa_attributes["Study Identifier"] == "my-first-study"
+        # assert mapper_1.isa_attributes["Study Title"] == "My First Study"
+
+        mapper_2 = IsaStudyMapper(pa)
+        assert (
+            mapper_2.isa_attributes["Study Identifier"] == "my-custom-study-id"
+        )
+        assert (
+            mapper_2.isa_attributes["Study Title"] == "My Custom Study Title"
+        )
 
     def test_arc_packer_create_study_with_annotations(
         self, project_with_arc_assay_annotation, tmp_path

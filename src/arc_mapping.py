@@ -31,8 +31,72 @@ class IsaStudyMapper:
     def __init__(self, ome_project):
         self.obj = ome_project
         self.isa_attributes = {
-            "identifier": ome_project.getName().lower().replace(" ", "-"),
-            "title": ome_project.getName(),
+            "ARC:ISA:STUDY:STUDY METADATA": {
+                "Study Identifier": ome_project.getName()
+                .lower()
+                .replace(" ", "-"),
+                "Study Title": ome_project.getName(),
+                "Study Description": ome_project.getDescription(),
+                "Study Submission Date": None,
+                "Study Public Release Date": None,
+            },
+            "ARC:ISA:STUDY:STUDY PUBLICATIONS": {
+                "Study Publication DOI": None,
+                "Study Publication PubMed ID": None,
+                "Study Publication Author List": None,
+                "Study Publication Title": None,
+                "Study Publication Status": None,
+                "Study Publication Status Term Accession Number": None,
+                "Study Publication Status Term Source REF": None,
+            },
+            "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS": {
+                "Study Design Type": None,
+                "Study Design Type Term Accession Number": None,
+                "Study Design Type Term Accession Number": None,
+            },
+            "ARC:ISA:STUDY:STUDY FACTORS": {
+                "Study Factor Name": None,
+                "Study Factor Type": None,
+                "Study Design Type Term Accession Number": None,
+                "Study Design Type Term Accession Number": None,
+            },
+            "ARC:ISA:STUDY:STUDY PROTOCOLS": {
+                "Study Protocol Name": None,
+                "Study Protocol Type": None,
+                "Study Protocol Term Accession Number": None,
+                "Study Protocol Term Source REF": None,
+                "Study Protocol Description": None,
+                "Study Protocol URI": None,
+                "Study Protocol Version": None,
+                "Study Protocol Parameters Name": None,
+                "Study Protocol Parameters Term Accession Number": None,
+                "Study Protocol Parameters Term Source REF": None,
+                "Study Protocol Components Name": None,
+                "Study Protocol Components Type": None,
+                "Study Protocol Components Term Accession Number": None,
+                "Study Protocol Components Term Source REF": None,
+            },
+            "ARC:ISA:STUDY:STUDY CONTACTS": {
+                "Study Person Last Name": None,
+                "Study Person First Name": None,
+                "Study Person Email": None,
+                "Study Person Phone": None,
+                "Study Person Fax": None,
+                "Study Person Address": None,
+                "Study Person Affiliation": None,
+                "Study Person orcid": None,
+                "Study Person Roles": None,
+                "Study Person Roles Term Accession Number": None,
+                "Study Person Roles Term Source REF": None,
+            },
+        }
+
+        self.arccommander_mapping = {
+            "--identifier": "Study Identifier",
+            "--title": "Study Title",
+            "--description": "Study Description",
+            "--submissiondate": "Study Submission Date",
+            "--publicreleasedate": "Study Public Release Date",
         }
 
 

@@ -118,6 +118,9 @@ class AbstractArcTest(AbstractCLITest):
         dataset = self.make_dataset(name="My Assay with Annotations")
         self.link(project, dataset)
 
+        annotation_namespace = "These Values are not relevant for ARCs"
+        annotations = {"color 1": "red", "color 2": "blue"}
+
         annotation_namespace = "ARC:ISA:STUDY:STUDY METADATA"
         annotations = {
             "Study Identifier": "my-custom-study-id",

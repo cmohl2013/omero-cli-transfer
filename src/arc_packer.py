@@ -98,11 +98,12 @@ class ArcPacker(object):
         mapper = IsaStudyMapper(ome_project)
 
         args = ["arc", "s", "add"]
-        for isa_attribute in mapper.isa_attributes:
-            option = f"--{isa_attribute}"
+        for option in mapper.arccommander_mapping:
+            isa_attribute = mapper.arccommander_mapping[option]
             value = mapper.isa_attributes[isa_attribute]
-            args.append(option)
-            args.append(value)
+            if value is not None:
+                args.append(option)
+                args.append(value)
 
         subprocess.run(args, cwd=self.path_to_arc_repo)
 
