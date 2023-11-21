@@ -209,7 +209,22 @@ class AbstractArcTest(AbstractCLITest):
             "Study Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
             "Study Publication Status Term Source REF": "EFO",
         }
-
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+        annotation_namespace = "ARC:ISA:STUDY:STUDY PUBLICATIONS"
+        annotations = {
+            "Study Publication DOI": "10.567/s56878-890890-330-3",
+            "Study Publication PubMed ID": 7898961,
+            "Study Publication Author List": "Mueller M, Langer L L, Berg J",
+            "Study Publication Title": "HELk reformation in activated Hela Cells",
+            "Study Publication Status": "published",
+            "Study Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Publication Status Term Source REF": "EFO",
+        }
         self.create_mapped_annotation(
             name=annotation_namespace,
             map_values=annotations,
@@ -218,8 +233,85 @@ class AbstractArcTest(AbstractCLITest):
         )
 
         annotation_namespace = "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS"
+        annotations = {
+            "Study Design Type": "Transmission Electron Microscoopy",
+            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Design Type Term Accession Number": "EFO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
 
         annotation_namespace = "ARC:ISA:STUDY:STUDY FACTORS"
+        annotations = {
+            "Study Factor Name": "My Factor",
+            "Study Factor Type": "Factor for test reasons",
+            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Design Type Term Accession Number": "EFO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY FACTORS"
+        annotations = {
+            "Study Factor Name": "My Second Factor",
+            "Study Factor Type": "Factor Number 2 for test reasons",
+            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Design Type Term Source REF": "EFO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY PROTOCOLS"
+        annotations = {
+            "Study Protocol Name": "Cell embedding for electron microscopy",
+            "Study Protocol Type": "Test Protocol Type",
+            "Study Protocol Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Protocol Term Source REF": "EFO",
+            "Study Protocol Description": "A protocol for test reasons.",
+            "Study Protocol URI": "urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
+            "Study Protocol Version": "0.0.1",
+            "Study Protocol Parameters Name": "temperature;glucose concentration",
+            "Study Protocol Parameters Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Protocol Parameters Term Source REF": "EFO",
+            "Study Protocol Components Name": "SuperEmeddingMediumX;SuperEmeddingMediumY",
+            "Study Protocol Components Type": "reagent;reagent",
+            "Study Protocol Components Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Protocol Components Term Source REF": "EFO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = "ARC:ISA:STUDY:STUDY CONTACTS"
+        annotations = {
+            "Study Person Last Name": "Arno",
+            "Study Person First Name": "Mueller",
+            "Study Person Email": "arno.mueller@email.com",
+            "Study Person Roles": "researcher",
+            "Study Person Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Study Person Roles Term Source REF": "SCoRO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
 
         annotation_namespace = "ARC:ISA:ASSAY:ASSAY METADATA"
         annotations = {
