@@ -30,24 +30,48 @@ class AbstractIsaAssaySheetMapper:
 class IsaStudyMapper:
     def __init__(self, ome_project):
         self.obj = ome_project
+
+        # annotation
         self.isa_attributes = {
             "ARC:ISA:STUDY:STUDY METADATA": {
-                "Study Identifier": ome_project.getName()
-                .lower()
-                .replace(" ", "-"),
-                "Study Title": ome_project.getName(),
-                "Study Description": ome_project.getDescription(),
-                "Study Submission Date": None,
-                "Study Public Release Date": None,
+                "defaults": {
+                    "Study Identifier": ome_project.getName()
+                    .lower()
+                    .replace(" ", "-"),
+                    "Study Title": ome_project.getName(),
+                    "Study Description": ome_project.getDescription(),
+                    "Study Submission Date": None,
+                    "Study Public Release Date": None,
+                },
+                "command": ["arc", "study", "add"],
+                "command_options": {
+                    "Study Identifier": "--identifier",
+                    "Study Title": "--title",
+                    "Study Description": "--description",
+                    "Study Submission Date": "--submissiondate",
+                    "Study Public Release Date": "--publicreleasedate",
+                },
             },
             "ARC:ISA:STUDY:STUDY PUBLICATIONS": {
-                "Study Publication DOI": None,
-                "Study Publication PubMed ID": None,
-                "Study Publication Author List": None,
-                "Study Publication Title": None,
-                "Study Publication Status": None,
-                "Study Publication Status Term Accession Number": None,
-                "Study Publication Status Term Source REF": None,
+                "defaults": {
+                    "Study Publication DOI": None,
+                    "Study Publication PubMed ID": None,
+                    "Study Publication Author List": None,
+                    "Study Publication Title": None,
+                    "Study Publication Status": None,
+                    "Study Publication Status Term Accession Number": None,
+                    "Study Publication Status Term Source REF": None,
+                },
+                "command": ["arc", "study", "publication", "register"],
+                "command_options": {
+                    "Study Publication DOI": "--doi",
+                    "Study Publication PubMed ID": "--pubmedid",
+                    "Study Publication Author List": "--authorlist",
+                    "Study Publication Title": "--title",
+                    "Study Publication Status": "--status",
+                    "Study Publication Status Term Accession Number": "--statustermaccessionnumber",
+                    "Study Publication Status Term Source REF": "--statustermsourceref",
+                },
             },
             "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS": {
                 "Study Design Type": None,
