@@ -11,21 +11,25 @@ class TestIsaStudyMapper(AbstractArcTest):
 
         mapper_1 = IsaStudyMapper(p)
         assert (
-            mapper_1.isa_attributes["metadata"]["Study Identifier"]
+            mapper_1.isa_attributes["metadata"]["values"][0][
+                "Study Identifier"
+            ]
             == "my-first-study"
         )
         assert (
-            mapper_1.isa_attributes["metadata"]["Study Title"]
+            mapper_1.isa_attributes["metadata"]["values"][0]["Study Title"]
             == "My First Study"
         )
 
         mapper_2 = IsaStudyMapper(pa)
         assert (
-            mapper_2.isa_attributes["metadata"]["Study Identifier"]
+            mapper_2.isa_attributes["metadata"]["values"][0][
+                "Study Identifier"
+            ]
             == "my-custom-study-id"
         )
         assert (
-            mapper_2.isa_attributes["metadata"]["Study Title"]
+            mapper_2.isa_attributes["metadata"]["values"][0]["Study Title"]
             == "My Custom Study Title"
         )
 

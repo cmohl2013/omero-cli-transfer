@@ -144,7 +144,7 @@ class IsaStudyMapper:
                     "protocol",
                     "register",
                 ],
-                "default_values": {
+                "command_options": {
                     "Study Protocol Name": "--name",
                     "Study Protocol Type": "--protocoltype",
                     "Study Protocol Type Term Accession Number": "--typetermaccessionnumber",
@@ -199,6 +199,8 @@ class IsaStudyMapper:
             },
         }
 
+        self._create_isa_attributes()
+
     @lru_cache
     def _all_annotatation_objects(self):
         return [a for a in self.obj.listAnnotations()]
@@ -211,10 +213,55 @@ class IsaStudyMapper:
                 annotation_data.append(dict(annotation.getValue()))
         return annotation_data
 
+    def _create_isa_attributes(self):
+        isa_attributes = {}
+        for annotation_type in self.isa_attribute_config:
+            annotation_data = self._annotation_data(annotation_type)
+            config = self.isa_attribute_config[annotation_type]
+
+            isa_attributes[annotation_type] = {}
+
+            if annotation_type == "metadata":
+                assert (
+                    len(annotation_data) <= 1
+                ), f"only one annotation allowed for {config['namespace']}"
+                command = config["command"]
+            else:
+                command = config["command"] + [
+                    "--studyidentifier",
+                    self.study_identifier(),
+                ]
+
+            isa_attributes[annotation_type]["values"] = []
+            isa_attributes[annotation_type]["command"] = command
+            isa_attributes[annotation_type]["command_options"] = config[
+                "command_options"
+            ]
+            values_to_set = {}
+            if len(annotation_data) == 0:
+                # set defaults if no annotations available
+                for key in config["default_values"]:
+                    value = config["default_values"][key]
+                    if value is not None:
+                        values_to_set[key] = value
+                isa_attributes[annotation_type]["values"].append(values_to_set)
+            else:
+                # set defaults only for keys where no annotation is available
+                for annotation in annotation_data:
+                    for key in config["default_values"]:
+                        value = annotation.get(key, None)
+                        if value is None:
+                            value = config["default_values"][key]
+                        if value is not None:
+                            values_to_set[key] = value
+                    isa_attributes[annotation_type]["values"].append(
+                        values_to_set
+                    )
+
+            self.isa_attributes = isa_attributes
+
     def study_identifier(self):
-        return self.isa_attributes["ARC:ISA:STUDY:STUDY METADATA"][
-            "default_values"
-        ]["Study Identifier"]
+        return self.isa_attributes["metadata"]["values"][0]["Study Identifier"]
 
 
 class IsaAssayMapper:
