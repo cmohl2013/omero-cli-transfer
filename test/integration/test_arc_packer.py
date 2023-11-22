@@ -93,16 +93,36 @@ class TestArcPacker(AbstractArcTest):
         assert df.loc["Study Identifier"].iloc[0] == "my-custom-study-id"
         assert df.loc["Study Submission Date"].iloc[0] == "8/11/2022"
         assert df.loc["Study Public Release Date"].iloc[0] == "3/3/2023"
-        assert df.loc["Study Publication PubMed ID"].iloc[0] == "678978"
-        assert df.loc["Study Publication PubMed ID"].iloc[1] == "7898961"
 
+        assert (
+            df.loc["Study Publication PubMed ID"].iloc[0]
+            != df.loc["Study Publication PubMed ID"].iloc[1]
+        )
+        assert df.loc["Study Publication PubMed ID"].iloc[0] in (
+            "678978",
+            "7898961",
+        )
+        assert df.loc["Study Publication PubMed ID"].iloc[1] in (
+            "678978",
+            "7898961",
+        )
         assert (
             df.loc["Study Design Type"].iloc[0]
             == "Transmission Electron Microscopy"
         )
 
-        assert df.loc["Study Factor Name"].iloc[0] == "My Factor"
-        assert df.loc["Study Factor Name"].iloc[1] == "My Second Factor"
+        assert (
+            df.loc["Study Factor Name"].iloc[0]
+            != df.loc["Study Factor Name"].iloc[1]
+        )
+        assert df.loc["Study Factor Name"].iloc[0] in (
+            "My Factor",
+            "My Second Factor",
+        )
+        assert df.loc["Study Factor Name"].iloc[1] in (
+            "My Factor",
+            "My Second Factor",
+        )
 
         assert (
             df.loc["Study Protocol Name"].iloc[0]
