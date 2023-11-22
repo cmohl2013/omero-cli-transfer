@@ -1,5 +1,5 @@
 import importlib
-
+from functools import lru_cache
 
 if importlib.util.find_spec("pandas"):
     import pandas as pd
@@ -32,9 +32,10 @@ class IsaStudyMapper:
         self.obj = ome_project
 
         # annotation
-        self.isa_attributes = {
-            "ARC:ISA:STUDY:STUDY METADATA": {
-                "defaults": {
+        self.isa_attribute_config = {
+            "metadata": {
+                "namespace": "ARC:ISA:STUDY:STUDY METADATA",
+                "default_values": {
                     "Study Identifier": ome_project.getName()
                     .lower()
                     .replace(" ", "-"),
@@ -52,8 +53,9 @@ class IsaStudyMapper:
                     "Study Public Release Date": "--publicreleasedate",
                 },
             },
-            "ARC:ISA:STUDY:STUDY PUBLICATIONS": {
-                "defaults": {
+            "publications": {
+                "namespace": "ARC:ISA:STUDY:STUDY PUBLICATIONS",
+                "default_values": {
                     "Study Publication DOI": None,
                     "Study Publication PubMed ID": None,
                     "Study Publication Author List": None,
@@ -62,7 +64,12 @@ class IsaStudyMapper:
                     "Study Publication Status Term Accession Number": None,
                     "Study Publication Status Term Source REF": None,
                 },
-                "command": ["arc", "study", "publication", "register"],
+                "command": [
+                    "arc",
+                    "study",
+                    "publication",
+                    "register",
+                ],
                 "command_options": {
                     "Study Publication DOI": "--doi",
                     "Study Publication PubMed ID": "--pubmedid",
@@ -73,55 +80,141 @@ class IsaStudyMapper:
                     "Study Publication Status Term Source REF": "--statustermsourceref",
                 },
             },
-            "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS": {
-                "Study Design Type": None,
-                "Study Design Type Term Accession Number": None,
-                "Study Design Type Term Accession Number": None,
+            "design": {
+                "namespace": "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS",
+                "default_values": {
+                    "Study Design Type": None,
+                    "Study Design Type Term Accession Number": None,
+                    "Study Design Type Term Accession Number": None,
+                },
+                "command": [
+                    "arc",
+                    "study",
+                    "design",
+                    "register",
+                ],
+                "command_options": {
+                    "Study Design Type": "--designtype",
+                    "Study Design Type Term Accession Number": "--typetermaccessionnumber",
+                    "Study Design Type Term Accession Number": "--typetermsourceref",
+                },
             },
-            "ARC:ISA:STUDY:STUDY FACTORS": {
-                "Study Factor Name": None,
-                "Study Factor Type": None,
-                "Study Design Type Term Accession Number": None,
-                "Study Design Type Term Accession Number": None,
+            "factors": {
+                "namespace": "ARC:ISA:STUDY:STUDY FACTORS",
+                "default_values": {
+                    "Study Factor Name": None,
+                    "Study Factor Type": None,
+                    "Study Design Type Term Accession Number": None,
+                    "Study Design Type Term Accession Number": None,
+                },
+                "command": [
+                    "arc",
+                    "study",
+                    "factor",
+                    "register",
+                ],
+                "command_options": {
+                    "Study Factor Name": "--name",
+                    "Study Factor Type": "--factortype",
+                    "Study Design Type Term Accession Number": "--typetermaccessionnumber",
+                    "Study Design Type Term Accession Number": "--typetermsourceref",
+                },
             },
-            "ARC:ISA:STUDY:STUDY PROTOCOLS": {
-                "Study Protocol Name": None,
-                "Study Protocol Type": None,
-                "Study Protocol Term Accession Number": None,
-                "Study Protocol Term Source REF": None,
-                "Study Protocol Description": None,
-                "Study Protocol URI": None,
-                "Study Protocol Version": None,
-                "Study Protocol Parameters Name": None,
-                "Study Protocol Parameters Term Accession Number": None,
-                "Study Protocol Parameters Term Source REF": None,
-                "Study Protocol Components Name": None,
-                "Study Protocol Components Type": None,
-                "Study Protocol Components Term Accession Number": None,
-                "Study Protocol Components Term Source REF": None,
+            "protocols": {
+                "namespace": "ARC:ISA:STUDY:STUDY PROTOCOLS",
+                "default_values": {
+                    "Study Protocol Name": None,
+                    "Study Protocol Type": None,
+                    "Study Protocol Type Term Accession Number": None,
+                    "Study Protocol Type Term Source REF": None,
+                    "Study Protocol Description": None,
+                    "Study Protocol URI": None,
+                    "Study Protocol Version": None,
+                    "Study Protocol Parameters Name": None,
+                    "Study Protocol Parameters Term Accession Number": None,
+                    "Study Protocol Parameters Term Source REF": None,
+                    "Study Protocol Components Name": None,
+                    "Study Protocol Components Type": None,
+                    "Study Protocol Components Term Accession Number": None,
+                    "Study Protocol Components Term Source REF": None,
+                },
+                "command": [
+                    "arc",
+                    "study",
+                    "protocol",
+                    "register",
+                ],
+                "default_values": {
+                    "Study Protocol Name": "--name",
+                    "Study Protocol Type": "--protocoltype",
+                    "Study Protocol Type Term Accession Number": "--typetermaccessionnumber",
+                    "Study Protocol Type Term Source REF": "--typetermsourceref",
+                    "Study Protocol Description": "--description",
+                    "Study Protocol URI": "--uri",
+                    "Study Protocol Version": "--version",
+                    "Study Protocol Parameters Name": "--parametersname",
+                    "Study Protocol Parameters Term Accession Number": "--parameterstermaccessionnumber",
+                    "Study Protocol Parameters Term Source REF": "--parameterstermsourceref",
+                    "Study Protocol Components Name": "--componentsname",
+                    "Study Protocol Components Type": "--componentstype",
+                    "Study Protocol Components Term Accession Number": "--componentstypeaccessionnumber",
+                    "Study Protocol Components Term Source REF": "--componentstypetermsourceref",
+                },
             },
-            "ARC:ISA:STUDY:STUDY CONTACTS": {
-                "Study Person Last Name": None,
-                "Study Person First Name": None,
-                "Study Person Email": None,
-                "Study Person Phone": None,
-                "Study Person Fax": None,
-                "Study Person Address": None,
-                "Study Person Affiliation": None,
-                "Study Person orcid": None,
-                "Study Person Roles": None,
-                "Study Person Roles Term Accession Number": None,
-                "Study Person Roles Term Source REF": None,
+            "contacts": {
+                "namespace": "ARC:ISA:STUDY:STUDY CONTACTS",
+                "default_values": {
+                    "Study Person Last Name": None,
+                    "Study Person First Name": None,
+                    "Study Person Email": None,
+                    "Study Person Phone": None,
+                    "Study Person Fax": None,
+                    "Study Person Address": None,
+                    "Study Person Affiliation": None,
+                    "Study Person orcid": None,
+                    "Study Person Roles": None,
+                    "Study Person Roles Term Accession Number": None,
+                    "Study Person Roles Term Source REF": None,
+                },
+                "command": [
+                    "arc",
+                    "study",
+                    "person",
+                    "register",
+                ],
+                "command_options": {
+                    "Study Person Last Name": "--lastname",
+                    "Study Person First Name": "--firstname",
+                    "Study Person Mid Initials": "--midinitials",
+                    "Study Person Email": "--email",
+                    "Study Person Phone": "--phone",
+                    "Study Person Fax": "--fax",
+                    "Study Person Address": "--address",
+                    "Study Person Affiliation": "--affiliation",
+                    "Study Person orcid": "--orcid",
+                    "Study Person Roles": "--roles",
+                    "Study Person Roles Term Accession Number": "--rolestermaccessionnumber",
+                    "Study Person Roles Term Source REF": "--rolestermsourceref",
+                },
             },
         }
 
-        self.arccommander_mapping = {
-            "--identifier": "Study Identifier",
-            "--title": "Study Title",
-            "--description": "Study Description",
-            "--submissiondate": "Study Submission Date",
-            "--publicreleasedate": "Study Public Release Date",
-        }
+    @lru_cache
+    def _all_annotatation_objects(self):
+        return [a for a in self.obj.listAnnotations()]
+
+    def _annotation_data(self, annotation_type):
+        namespace = self.isa_attribute_config[annotation_type]["namespace"]
+        annotation_data = []
+        for annotation in self._all_annotatation_objects():
+            if annotation.getName() == namespace:
+                annotation_data.append(dict(annotation.getValue()))
+        return annotation_data
+
+    def study_identifier(self):
+        return self.isa_attributes["ARC:ISA:STUDY:STUDY METADATA"][
+            "default_values"
+        ]["Study Identifier"]
 
 
 class IsaAssayMapper:

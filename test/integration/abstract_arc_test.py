@@ -120,6 +120,12 @@ class AbstractArcTest(AbstractCLITest):
 
         annotation_namespace = "These Values are not relevant for ARCs"
         annotations = {"color 1": "red", "color 2": "blue"}
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
 
         annotation_namespace = "ARC:ISA:STUDY:STUDY METADATA"
         annotations = {
