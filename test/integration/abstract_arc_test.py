@@ -177,8 +177,8 @@ class AbstractArcTest(AbstractCLITest):
 
         annotation_namespace = "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS"
         annotations = {
-            "Study Design Type": "Transmission Electron Microscoopy",
-            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Design Type": "Transmission Electron Microscopy",
+            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
             "Study Design Type Term Accession Number": "EFO",
         }
         self.create_mapped_annotation(
@@ -192,7 +192,7 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Factor Name": "My Factor",
             "Study Factor Type": "Factor for test reasons",
-            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
             "Study Design Type Term Accession Number": "EFO",
         }
         self.create_mapped_annotation(
@@ -206,7 +206,7 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Factor Name": "My Second Factor",
             "Study Factor Type": "Factor Number 2 for test reasons",
-            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
+            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
             "Study Design Type Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
@@ -220,18 +220,18 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Protocol Name": "Cell embedding for electron microscopy",
             "Study Protocol Type": "Test Protocol Type",
-            "Study Protocol Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
-            "Study Protocol Term Source REF": "EFO",
+            "Study Protocol Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Protocol Type Term Source REF": "EFO",
             "Study Protocol Description": "A protocol for test reasons.",
             "Study Protocol URI": "urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
             "Study Protocol Version": "0.0.1",
             "Study Protocol Parameters Name": "temperature;glucose concentration",
-            "Study Protocol Parameters Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
-            "Study Protocol Parameters Term Source REF": "EFO",
+            "Study Protocol Parameters Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796;http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Protocol Parameters Term Source REF": "EFO;EFO",
             "Study Protocol Components Name": "SuperEmeddingMediumX;SuperEmeddingMediumY",
             "Study Protocol Components Type": "reagent;reagent",
-            "Study Protocol Components Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001759",
-            "Study Protocol Components Term Source REF": "EFO",
+            "Study Protocol Components Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796;http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Protocol Components Type Term Source REF": "EFO;EFO",
         }
         self.create_mapped_annotation(
             name=annotation_namespace,

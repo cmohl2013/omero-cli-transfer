@@ -105,8 +105,8 @@ class IsaStudyMapper:
                 "default_values": {
                     "Study Factor Name": None,
                     "Study Factor Type": None,
-                    "Study Design Type Term Accession Number": None,
-                    "Study Design Type Term Accession Number": None,
+                    "Study Factor Type Term Accession Number": None,
+                    "Study Factor Type Term Accession Number": None,
                 },
                 "command": [
                     "arc",
@@ -117,8 +117,8 @@ class IsaStudyMapper:
                 "command_options": {
                     "Study Factor Name": "--name",
                     "Study Factor Type": "--factortype",
-                    "Study Design Type Term Accession Number": "--typetermaccessionnumber",
-                    "Study Design Type Term Accession Number": "--typetermsourceref",
+                    "Study Factor Type Term Accession Number": "--typetermaccessionnumber",
+                    "Study Factor Type Term Accession Number": "--typetermsourceref",
                 },
             },
             "protocols": {
@@ -136,8 +136,8 @@ class IsaStudyMapper:
                     "Study Protocol Parameters Term Source REF": None,
                     "Study Protocol Components Name": None,
                     "Study Protocol Components Type": None,
-                    "Study Protocol Components Term Accession Number": None,
-                    "Study Protocol Components Term Source REF": None,
+                    "Study Protocol Components Type Term Accession Number": None,
+                    "Study Protocol Components Type Term Source REF": None,
                 },
                 "command": [
                     "arc",
@@ -158,8 +158,8 @@ class IsaStudyMapper:
                     "Study Protocol Parameters Term Source REF": "--parameterstermsourceref",
                     "Study Protocol Components Name": "--componentsname",
                     "Study Protocol Components Type": "--componentstype",
-                    "Study Protocol Components Term Accession Number": "--componentstypeaccessionnumber",
-                    "Study Protocol Components Term Source REF": "--componentstypetermsourceref",
+                    "Study Protocol Components Type Term Accession Number": "--componentstypetermaccessionnumber",
+                    "Study Protocol Components Type Term Source REF": "--componentstypetermsourceref",
                 },
             },
             "contacts": {

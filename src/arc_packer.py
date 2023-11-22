@@ -96,16 +96,9 @@ class ArcPacker(object):
         ome_project = self.obj
 
         mapper = IsaStudyMapper(ome_project)
-
-        args = ["arc", "s", "add"]
-        for option in mapper.arccommander_mapping:
-            isa_attribute = mapper.arccommander_mapping[option]
-            value = mapper.isa_attributes[isa_attribute]
-            if value is not None:
-                args.append(option)
-                args.append(value)
-
-        subprocess.run(args, cwd=self.path_to_arc_repo)
+        for command in mapper.arccommander_commands():
+            subprocess.run(command, cwd=self.path_to_arc_repo)
+            pass
 
     def _create_assays(self):
         ome_project = self.obj
