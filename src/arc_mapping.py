@@ -1,5 +1,6 @@
 import importlib
 from functools import lru_cache
+from copy import deepcopy
 
 if importlib.util.find_spec("pandas"):
     import pandas as pd
@@ -213,6 +214,21 @@ class IsaStudyMapper:
                 annotation_data.append(dict(annotation.getValue()))
         return annotation_data
 
+    def arccommander_commands(self):
+        cmds = []
+        for annotation_type in self.isa_attributes:
+            isa_attributes = deepcopy(self.isa_attributes[annotation_type])
+
+            for d in isa_attributes["values"]:
+                cmd = isa_attributes.get("command").copy()
+                for key in d:
+                    command_option = isa_attributes["command_options"][key]
+                    value = d[key]
+                    cmd.append(command_option)
+                    cmd.append(value)
+                cmds.append(cmd)
+        return cmds
+
     def _create_isa_attributes(self):
         isa_attributes = {}
         for annotation_type in self.isa_attribute_config:
@@ -244,7 +260,10 @@ class IsaStudyMapper:
                     value = config["default_values"][key]
                     if value is not None:
                         values_to_set[key] = value
-                isa_attributes[annotation_type]["values"].append(values_to_set)
+                if len(values_to_set) > 0:
+                    isa_attributes[annotation_type]["values"].append(
+                        values_to_set
+                    )
             else:
                 # set defaults only for keys where no annotation is available
                 for annotation in annotation_data:
@@ -254,9 +273,12 @@ class IsaStudyMapper:
                             value = config["default_values"][key]
                         if value is not None:
                             values_to_set[key] = value
-                    isa_attributes[annotation_type]["values"].append(
-                        values_to_set
-                    )
+                    if len(values_to_set) > 0:
+                        isa_attributes[annotation_type]["values"].append(
+                            values_to_set.copy()
+                        )
+            if len(isa_attributes[annotation_type]["values"]) == 0:
+                del isa_attributes[annotation_type]
 
             self.isa_attributes = isa_attributes
 

@@ -131,11 +131,7 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Identifier": "my-custom-study-id",
             "Study Title": "My Custom Study Title",
-            "Study Description": (
-                "If the annotation for study title is set, "
-                "this value overwrites the"
-                "default value (default value is the omero project name)"
-            ),
+            "Study Description": "My custom description.",
             "Study Submission Date": "8/11/2022",
             "Study Public Release Date": "3/3/2023",
         }
