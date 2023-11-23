@@ -4,7 +4,7 @@ import subprocess
 import shutil
 import importlib
 import json
-from arc_mapping import IsaStudyMapper, IsaAssayMapper
+from arc_mapping import IsaStudyMapper, IsaAssayMapper, IsaInvestigationMapper
 
 if importlib.util.find_spec("pandas"):
     import pandas as pd
@@ -75,30 +75,19 @@ class ArcPacker(object):
         os.makedirs(self.path_to_arc_repo, exist_ok=False)
 
         subprocess.run(["arc", "init"], cwd=self.path_to_arc_repo)
-
-        investigation_title = "Test Investigation 1"
-        investigation_identifier = fmt_identifier(investigation_title)
-
-        subprocess.run(
-            [
-                "arc",
-                "investigation",
-                "create",
-                "--identifier",
-                investigation_identifier,
-                "--title",
-                investigation_title,
-            ],
-            cwd=self.path_to_arc_repo,
-        )
+        ome_project = self.obj
+        mapper = IsaInvestigationMapper(ome_project)
+        for command in mapper.arccommander_commands():
+            if len(command) > 0:
+                subprocess.run(command, cwd=self.path_to_arc_repo)
 
     def _create_study(self):
         ome_project = self.obj
 
         mapper = IsaStudyMapper(ome_project)
         for command in mapper.arccommander_commands():
-            subprocess.run(command, cwd=self.path_to_arc_repo)
-            pass
+            if len(command) > 0:
+                subprocess.run(command, cwd=self.path_to_arc_repo)
 
     def _create_assays(self):
         ome_project = self.obj

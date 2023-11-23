@@ -173,6 +173,41 @@ class AbstractArcTest(AbstractCLITest):
             parent_object=project,
         )
 
+        annotation_namespace = "ARC:ISA:INVESTIGATION:INVESTIGATION CONTACTS"
+        annotations = {
+            "Investigation Person Last Name": "Mueller",
+            "Investigation Person First Name": "Arno",
+            "Investigation Person Email": "arno.mueller@email.com",
+            "Investigation Person Roles": "researcher",
+            "Investigation Person Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Investigation Person Roles Term Source REF": "SCoRO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = (
+            "ARC:ISA:INVESTIGATION:INVESTIGATION PUBLICATIONS"
+        )
+        annotations = {
+            "Investigation Publication DOI": "10.1038/s41467-022-34205-9",
+            "Investigation Publication PubMed ID": 678978,
+            "Investigation Publication Author List": "Mueller M, Langer L L",
+            "Investigation Publication Title": "HJKIH P9 orchestrates JKLKinase trafficking in mesenchymal cells.",
+            "Investigation Publication Status": "published",
+            "Investigation Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Investigation Publication Status Term Source REF": "EFO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
         annotation_namespace = "ARC:ISA:STUDY:STUDY METADATA"
         annotations = {
             "Study Identifier": "my-custom-study-id",

@@ -33,10 +33,13 @@ class AbstractIsaMapper:
             for d in isa_attributes["values"]:
                 cmd = isa_attributes.get("command", []).copy()
                 for key in d:
-                    command_option = isa_attributes["command_options"][key]
-                    value = d[key]
-                    cmd.append(command_option)
-                    cmd.append(value)
+                    command_option = isa_attributes["command_options"].get(
+                        key, None
+                    )
+                    if command_option is not None:
+                        value = d[key]
+                        cmd.append(command_option)
+                        cmd.append(value)
                 cmds.append(cmd)
         return cmds
 
@@ -94,9 +97,6 @@ class AbstractIsaMapper:
 
             self.isa_attributes = isa_attributes
 
-    def study_identifier(self):
-        return self.isa_attributes["metadata"]["values"][0]["Study Identifier"]
-
 
 class AbstractIsaAssaySheetMapper:
     def __init__(self, ome_dataset):
@@ -138,10 +138,79 @@ class IsaInvestigationMapper(AbstractIsaMapper):
                     "Investigation Title": None,
                     "Investigation Description": None,
                     "Investigation Submission Date": None,
-                    "Investigation Publiv Release Date": None,
+                    "Investigation Public Release Date": None,
                 },
-                "command": [],
-                "command_options": [],
+                "command": ["arc", "investigation", "create"],
+                "command_options": {
+                    "Investigation Identifier": "--identifier",
+                    "Investigation Title": "--title",
+                    "Investigation Description": "--description",
+                    "Investigation Submission Date": "--submissiondate",
+                    "Investigation Public Release Date": "--publicreleasedate",
+                },
+            },
+            "publications": {
+                "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION PUBLICATIONS",
+                "default_values": {
+                    "Investigation Publication DOI": None,
+                    "Investigation Publication PubMed ID": None,
+                    "Investigation Publication Author List": None,
+                    "Investigation Publication Title": None,
+                    "Investigation Publication Status": None,
+                    "Investigation Publication Status Term Accession Number": None,
+                    "Investigation Publication Status Term Source REF": None,
+                },
+                "command": [
+                    "arc",
+                    "investigation",
+                    "publication",
+                    "register",
+                ],
+                "command_options": {
+                    "Investigation Publication DOI": "--doi",
+                    "Investigation Publication PubMed ID": "--pubmedid",
+                    "Investigation Publication Author List": "--authorlist",
+                    "Investigation Publication Title": "--title",
+                    "Investigation Publication Status": "--status",
+                    "Investigation Publication Status Term Accession Number": "--statustermaccessionnumber",
+                    "Investigation Publication Status Term Source REF": "--statustermsourceref",
+                },
+            },
+            "contacts": {
+                "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION CONTACTS",
+                "default_values": {
+                    "Investigation Person Last Name": None,
+                    "Investigation Person First Name": None,
+                    "Investigation Person Email": None,
+                    "Investigation Person Phone": None,
+                    "Investigation Person Fax": None,
+                    "Investigation Person Address": None,
+                    "Investigation Person Affiliation": None,
+                    "Investigation Person orcid": None,
+                    "Investigation Person Roles": None,
+                    "Investigation Person Roles Term Accession Number": None,
+                    "Investigation Person Roles Term Source REF": None,
+                },
+                "command": [
+                    "arc",
+                    "investigation",
+                    "person",
+                    "register",
+                ],
+                "command_options": {
+                    "Investigation Person Last Name": "--lastname",
+                    "Investigation Person First Name": "--firstname",
+                    "Investigation Person Mid Initials": "--midinitials",
+                    "Investigation Person Email": "--email",
+                    "Investigation Person Phone": "--phone",
+                    "Investigation Person Fax": "--fax",
+                    "Investigation Person Address": "--address",
+                    "Investigation Person Affiliation": "--affiliation",
+                    "Investigation Person orcid": "--orcid",
+                    "Investigation Person Roles": "--roles",
+                    "Investigation Person Roles Term Accession Number": "--rolestermaccessionnumber",
+                    "Investigation Person Roles Term Source REF": "--rolestermsourceref",
+                },
             },
         }
 
@@ -149,6 +218,9 @@ class IsaInvestigationMapper(AbstractIsaMapper):
 
 
 class IsaStudyMapper(AbstractIsaMapper):
+    def study_identifier(self):
+        return self.isa_attributes["metadata"]["values"][0]["Study Identifier"]
+
     def __init__(self, ome_project):
         self.obj = ome_project
 

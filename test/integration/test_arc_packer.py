@@ -2,6 +2,7 @@ from abstract_arc_test import AbstractArcTest
 import pytest
 from omero_cli_transfer import ArcPacker
 import pandas as pd
+import numpy as np
 
 
 class TestArcPacker(AbstractArcTest):
@@ -22,9 +23,41 @@ class TestArcPacker(AbstractArcTest):
 
         assert (
             df.loc["Investigation Identifier"].iloc[0]
-            == "test-investigation-1"
+            == "default-investigation-id"
         )
-        assert df.loc["Investigation Title"].iloc[0] == "Test Investigation 1"
+        assert df.loc["Investigation Title"].iloc[0] is np.nan
+
+    def test_arc_packer_initialize_with_annotations(
+        self, project_with_arc_assay_annotation, tmp_path
+    ):
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            ome_object=project_with_arc_assay_annotation,
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_image_files=None,
+            image_filenames_mapping=None,
+            conn=self.client,
+        )
+        ap.initialize_arc_repo()
+        df = pd.read_excel(
+            path_to_arc_repo / "isa.investigation.xlsx",
+            index_col=0,
+        )
+
+        assert (
+            df.loc["Investigation Identifier"].iloc[0]
+            == "my-custom-investigation-id"
+        )
+        assert (
+            df.loc["Investigation Title"].iloc[0]
+            == "Mitochondria in HeLa Cells"
+        )
+
+        assert df.loc["Investigation Person Last Name"].iloc[0] == "Mueller"
+        assert (
+            df.loc["Investigation Publication DOI"].iloc[0]
+            == "10.1038/s41467-022-34205-9"
+        )
 
     def test_arc_packer_create_study(self, project_1, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
