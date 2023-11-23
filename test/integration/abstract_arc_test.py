@@ -127,6 +127,52 @@ class AbstractArcTest(AbstractCLITest):
             parent_object=project,
         )
 
+        annotation_namespace = (
+            "ARC:ISA:INVESTIGATION:ONTOLOGY SOURCE REFERENCE"
+        )
+        annotations = {
+            "Term Source Name": "SCoRO",
+            "Term Source File": "http://svn.code.sf.net/p/sempublishing/code/SCoRO/2017-09-04-SCoRO-1_9_1.owl",
+            "Term Source Version": "http://purl.org/spar/scoro/2017-09-04",
+            "Term Source Description": "SCoRO, the Scholarly Contributions and Roles Ontology",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = (
+            "ARC:ISA:INVESTIGATION:ONTOLOGY SOURCE REFERENCE"
+        )
+        annotations = {
+            "Term Source Name": "EFO",
+            "Term Source File": "http://www.ebi.ac.uk/efo/releases/v3.14.0/efo.owl",
+            "Term Source Description": "Experimental Factor Ontology",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
+        annotation_namespace = "ARC:ISA:INVESTIGATION:INVESTIGATION"
+        annotations = {
+            "Investigation Identifier": "my-custom-investigation-id",
+            "Investigation Title": "Mitochondria in HeLa Cells",
+            "Investigation Description": "Observation of MDV formation in Mitochondria",
+            "Investigation Submission Date": "8/11/2022",
+            "Investigation Public Release Date": "1/12/2022",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=project,
+        )
+
         annotation_namespace = "ARC:ISA:STUDY:STUDY METADATA"
         annotations = {
             "Study Identifier": "my-custom-study-id",

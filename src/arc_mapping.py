@@ -31,7 +31,7 @@ class AbstractIsaMapper:
             isa_attributes = deepcopy(self.isa_attributes[annotation_type])
 
             for d in isa_attributes["values"]:
-                cmd = isa_attributes.get("command").copy()
+                cmd = isa_attributes.get("command", []).copy()
                 for key in d:
                     command_option = isa_attributes["command_options"][key]
                     value = d[key]
@@ -52,12 +52,13 @@ class AbstractIsaMapper:
                 assert (
                     len(annotation_data) <= 1
                 ), f"only one annotation allowed for {config['namespace']}"
-                command = config["command"]
-            else:
-                command = config["command"] + [
-                    "--studyidentifier",
-                    self.study_identifier(),
-                ]
+                command = config.get("command", [])
+
+            command = []
+            for arg in config.get("command", []):
+                if callable(arg):
+                    arg = arg()
+                command.append(arg)
 
             isa_attributes[annotation_type]["values"] = []
             isa_attributes[annotation_type]["command"] = command
@@ -113,6 +114,40 @@ class AbstractIsaAssaySheetMapper:
         return df
 
 
+class IsaInvestigationMapper(AbstractIsaMapper):
+    def __init__(self, ome_project):
+        self.obj = ome_project
+
+        # annotation
+        self.isa_attribute_config = {
+            "ontology_source_reference": {
+                "namespace": "ARC:ISA:INVESTIGATION:ONTOLOGY SOURCE REFERENCE",
+                "default_values": {
+                    "Term Source Name": None,
+                    "Term Source File": None,
+                    "Term Source Version": None,
+                    "Term Source Description": None,
+                },
+                "command": [],
+                "command_options": {},
+            },
+            "investigation": {
+                "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION",
+                "default_values": {
+                    "Investigation Identifier": "default-investigation-id",
+                    "Investigation Title": None,
+                    "Investigation Description": None,
+                    "Investigation Submission Date": None,
+                    "Investigation Publiv Release Date": None,
+                },
+                "command": [],
+                "command_options": [],
+            },
+        }
+
+        self._create_isa_attributes()
+
+
 class IsaStudyMapper(AbstractIsaMapper):
     def __init__(self, ome_project):
         self.obj = ome_project
@@ -155,6 +190,8 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "study",
                     "publication",
                     "register",
+                    "--studyidentifier",
+                    self.study_identifier,
                 ],
                 "command_options": {
                     "Study Publication DOI": "--doi",
@@ -178,6 +215,8 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "study",
                     "design",
                     "register",
+                    "--studyidentifier",
+                    self.study_identifier,
                 ],
                 "command_options": {
                     "Study Design Type": "--designtype",
@@ -198,6 +237,8 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "study",
                     "factor",
                     "register",
+                    "--studyidentifier",
+                    self.study_identifier,
                 ],
                 "command_options": {
                     "Study Factor Name": "--name",
@@ -229,6 +270,8 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "study",
                     "protocol",
                     "register",
+                    "--studyidentifier",
+                    self.study_identifier,
                 ],
                 "command_options": {
                     "Study Protocol Name": "--name",
@@ -267,6 +310,8 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "study",
                     "person",
                     "register",
+                    "--studyidentifier",
+                    self.study_identifier,
                 ],
                 "command_options": {
                     "Study Person Last Name": "--lastname",
