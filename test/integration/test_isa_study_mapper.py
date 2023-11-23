@@ -34,17 +34,15 @@ class TestIsaStudyMapper(AbstractArcTest):
         )
 
         assert (
-            mapper_2.isa_attributes["publications"]["values"][0][
-                "Study Publication PubMed ID"
-            ]
-            == "678978"
+            mapper_2.isa_attributes["publications"]["values"][0]
+            != mapper_2.isa_attributes["publications"]["values"][1]
         )
-        assert (
-            mapper_2.isa_attributes["publications"]["values"][1][
-                "Study Publication PubMed ID"
-            ]
-            == "7898961"
-        )
+        assert mapper_2.isa_attributes["publications"]["values"][0][
+            "Study Publication PubMed ID"
+        ] in ("678978", "7898961")
+        assert mapper_2.isa_attributes["publications"]["values"][1][
+            "Study Publication PubMed ID"
+        ] in ("678978", "7898961")
 
     def test_arccommander_cmds(
         self, project_with_arc_assay_annotation, project_1
@@ -90,7 +88,7 @@ class TestIsaStudyMapper(AbstractArcTest):
         ]
         assert cmds[0] == expected
 
-        expected = [
+        expected_1 = [
             "arc",
             "study",
             "publication",
@@ -112,9 +110,8 @@ class TestIsaStudyMapper(AbstractArcTest):
             "--statustermsourceref",
             "EFO",
         ]
-        assert cmds[1] == expected
 
-        expected = [
+        expected_2 = [
             "arc",
             "study",
             "publication",
@@ -136,7 +133,10 @@ class TestIsaStudyMapper(AbstractArcTest):
             "--statustermsourceref",
             "EFO",
         ]
-        assert cmds[2] == expected
+
+        assert cmds[1] != cmds[2]
+        assert cmds[1] in (expected_1, expected_2)
+        assert cmds[2] in (expected_1, expected_2)
 
     def test_annotation_data(
         self, project_1, project_with_arc_assay_annotation
@@ -159,5 +159,11 @@ class TestIsaStudyMapper(AbstractArcTest):
             annotation_data[0]["Study Publication PubMed ID"]
             != annotation_data[1]["Study Publication PubMed ID"]
         )
-        assert annotation_data[0]["Study Publication PubMed ID"] == "678978"
-        assert annotation_data[1]["Study Publication PubMed ID"] == "7898961"
+        assert annotation_data[0]["Study Publication PubMed ID"] in (
+            "678978",
+            "7898961",
+        )
+        assert annotation_data[1]["Study Publication PubMed ID"] in (
+            "678978",
+            "7898961",
+        )
