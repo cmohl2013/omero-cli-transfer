@@ -80,12 +80,10 @@ class AbstractIsaMapper:
                         values_to_set
                     )
             else:
-                # set defaults only for keys where no annotation is available
+                # set annotation value if key is registered in config["default_values"]
                 for annotation in annotation_data:
                     for key in config["default_values"]:
                         value = annotation.get(key, None)
-                        if value is None:
-                            value = config["default_values"][key]
                         if value is not None:
                             values_to_set[key] = value
                     if len(values_to_set) > 0:
@@ -117,7 +115,7 @@ class AbstractIsaAssaySheetMapper:
 class IsaInvestigationMapper(AbstractIsaMapper):
     def __init__(self, ome_project):
         self.obj = ome_project
-
+        project_owner = ome_project.getOwner()
         # annotation
         self.isa_attribute_config = {
             "ontology_source_reference": {
@@ -179,9 +177,9 @@ class IsaInvestigationMapper(AbstractIsaMapper):
             "contacts": {
                 "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION CONTACTS",
                 "default_values": {
-                    "Investigation Person Last Name": None,
-                    "Investigation Person First Name": None,
-                    "Investigation Person Email": None,
+                    "Investigation Person Last Name": project_owner.getLastName(),
+                    "Investigation Person First Name": project_owner.getFirstName(),
+                    "Investigation Person Email": project_owner.getEmail(),
                     "Investigation Person Phone": None,
                     "Investigation Person Fax": None,
                     "Investigation Person Address": None,
@@ -223,7 +221,7 @@ class IsaStudyMapper(AbstractIsaMapper):
 
     def __init__(self, ome_project):
         self.obj = ome_project
-
+        project_owner = ome_project.getOwner()
         # annotation
         self.isa_attribute_config = {
             "metadata": {
@@ -365,9 +363,9 @@ class IsaStudyMapper(AbstractIsaMapper):
             "contacts": {
                 "namespace": "ARC:ISA:STUDY:STUDY CONTACTS",
                 "default_values": {
-                    "Study Person Last Name": None,
-                    "Study Person First Name": None,
-                    "Study Person Email": None,
+                    "Study Person Last Name": project_owner.getLastName(),
+                    "Study Person First Name": project_owner.getFirstName(),
+                    "Study Person Email": project_owner.getEmail(),
                     "Study Person Phone": None,
                     "Study Person Fax": None,
                     "Study Person Address": None,
