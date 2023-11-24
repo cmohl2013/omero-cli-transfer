@@ -339,6 +339,7 @@ class AbstractArcTest(AbstractCLITest):
 
         annotation_namespace = "ARC:ISA:ASSAY:ASSAY METADATA"
         annotations = {
+            "Assay Identifier": "my-custom-assay-id",
             "Measurement Type": "High resolution transmission electron micrograph",
             "Measurement Type Term Accession Number": "http://purl.obolibrary.org/obo/CHMO_0002125",
             "Measurement Type Term Source REF": "CHMO",

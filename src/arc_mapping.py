@@ -403,21 +403,53 @@ class IsaStudyMapper(AbstractIsaMapper):
         self._create_isa_attributes()
 
 
-class IsaAssayMapper:
-    def __init__(self, ome_dataset, image_filename_getter):
+class IsaAssayMapper(AbstractIsaMapper):
+    def assay_identifier(self):
+        return self.isa_attributes["metadata"]["values"][0]["Assay Identifier"]
+
+    def __init__(self, ome_dataset, study_identifier, image_filename_getter):
         self.image_filename_getter = image_filename_getter
 
-        def _measurementtype():
-            return "Microscopy"
+        self.obj = ome_dataset
 
-        def _fmt_identifier(name):
-            return name.lower().replace(" ", "-")
-
-        self.isa_attributes_mapping = {
-            "assayidentifier": _fmt_identifier(ome_dataset.getName()),
-            "measurementtype": _measurementtype(),
+        self.isa_attribute_config = {
+            "metadata": {
+                "namespace": "ARC:ISA:ASSAY:ASSAY METADATA",
+                "default_values": {
+                    "Assay Identifier": ome_dataset.getName()
+                    .lower()
+                    .replace(" ", "-"),
+                    "Measurement Type": None,
+                    "Measurement Type Term Accession Number": None,
+                    "Measurement Type Term Source REF": None,
+                    "Technology Type": None,
+                    "Technology Type Term Accession Number": None,
+                    "Technology Type Term Source Ref": None,
+                    "Technolology Platform": None,
+                },
+                "command": [
+                    "arc",
+                    "assay",
+                    "add",
+                    "--studyidentifier",
+                    study_identifier,
+                ],
+                "command_options": {
+                    "Assay Identifier": "--assayidentifier",
+                    "Measurement Type": "--measurementtype",
+                    # mixed up on purpose to deal with arc commander bug
+                    # https://github.com/nfdi4plants/ARCCommander/issues/232
+                    "Measurement Type Term Accession Number": "--measurementtypetermsourceref",
+                    "Measurement Type Term Source REF": "--measurementtypetermaccessionnumber",
+                    "Technology Type": "--technologytype",
+                    # mixed up on purpose to deal with arc commander bug
+                    "Technology Type Term Accession Number": "--technologytypetermsourceref",
+                    "Technology Type Term Source Ref": "--technologytypetermaccessionnumber",
+                    "Technolology Platform": "--technologyplatform",
+                },
+            },
         }
-
+        self._create_isa_attributes()
         self.isa_sheets = [
             IsaAssaySheetImageFilesMapper(
                 ome_dataset, self.image_filename_getter

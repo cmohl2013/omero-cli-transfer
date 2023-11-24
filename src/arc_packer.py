@@ -101,20 +101,26 @@ class ArcPacker(object):
             "Dataset", opts={"project": project_id}
         )
         for dataset in ome_datasets:
-            mapper = IsaAssayMapper(dataset, _filename_for_image)
+            mapper = IsaAssayMapper(
+                dataset,
+                study_identifier=study_mapper.study_identifier(),
+                image_filename_getter=_filename_for_image,
+            )
             self.isa_assay_mappers.append(mapper)
-            args = ["arc", "a", "add"]
-            args.append("--studyidentifier")
-            args.append(study_mapper.isa_attributes["identifier"])
-            for isa_attribute in mapper.isa_attributes_mapping:
-                option = f"--{isa_attribute}"
-                value = mapper.isa_attributes_mapping[isa_attribute]
-                args.append(option)
-                args.append(value)
-            subprocess.run(args, cwd=self.path_to_arc_repo)
-            self.ome_dataset_for_isa_assay[
-                mapper.isa_attributes_mapping["assayidentifier"]
-            ] = dataset
+            for command in mapper.arccommander_commands():
+                if len(command) > 0:
+                    subprocess.run(command, cwd=self.path_to_arc_repo)
+
+            # args = ["arc", "a", "add"]
+            # args.append("--studyidentifier")
+            # args.append(study_mapper.isa_attributes["identifier"])
+            # for isa_attribute in mapper.isa_attributes_mapping:
+            #     option = f"--{isa_attribute}"
+            #     value = mapper.isa_attributes_mapping[isa_attribute]
+            #     args.append(option)
+            #     args.append(value)
+            # subprocess.run(args, cwd=self.path_to_arc_repo)
+            self.ome_dataset_for_isa_assay[mapper.assay_identifier()] = dataset
 
     def isa_assay_filename(self, assay_identifier):
         assert assay_identifier in self.assay_identifiers

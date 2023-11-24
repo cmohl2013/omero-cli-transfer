@@ -182,6 +182,47 @@ class TestArcPacker(AbstractArcTest):
         assert (path_to_arc_repo / "assays/my-first-assay").exists()
         assert (path_to_arc_repo / "assays/my-second-assay").exists()
 
+    def test_arc_packer_create_assays_with_annotations(
+        self, project_with_arc_assay_annotation, tmp_path
+    ):
+        path_to_arc_repo = tmp_path / "my_arc"
+        ap = ArcPacker(
+            ome_object=project_with_arc_assay_annotation,
+            path_to_arc_repo=path_to_arc_repo,
+            path_to_image_files=None,
+            image_filenames_mapping=None,
+            conn=self.gw,
+        )
+        ap.initialize_arc_repo()
+
+        ap._create_study()
+        ap._create_assays()
+
+        assert (path_to_arc_repo / "assays/my-custom-assay-id").exists()
+
+        df = pd.read_excel(
+            path_to_arc_repo / "assays/my-custom-assay-id/isa.assay.xlsx",
+            sheet_name="Assay",
+            index_col=0,
+        )
+
+        assert (
+            df.loc["Measurement Type"].iloc[0]
+            == "High resolution transmission electron micrograph"
+        )
+        assert df.loc["Measurement Type Term Source REF"].iloc[0] == "CHMO"
+        assert df.loc["Technology Type Term Source REF"].iloc[0] == "BAO"
+        assert (
+            df.loc["Technology Type Term Accession Number"].iloc[0]
+            == "http://www.bioassayontology.org/bao#BAO_0000455"
+        )
+
+        assert (
+            df.loc["Technology Type"].iloc[0]
+            == "transmission electron microscopy"
+        )
+        assert df.loc["Technology Platform"].iloc[0] == "JEOL JEM2100Plus"
+
     def test_arc_packer_add_image_data_for_assay(
         self,
         project_czi,
