@@ -49,7 +49,7 @@ test/data/simple_screen/
 test/data/valid_single_dataset/
 test/data/valid_single_project/
 test/data/valid_single_image/
-test/integration/ice.config
+#test/integration/ice.config
 test/data/prepare/transfer.xml
 test/data/arc_test_data/packed_projects
 
@@ -119,7 +119,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+#.env
 .venv
 env/
 venv/
