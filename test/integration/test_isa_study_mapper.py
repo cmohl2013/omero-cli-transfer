@@ -53,7 +53,7 @@ class TestIsaStudyMapper(AbstractArcTest):
         mapper_1 = IsaStudyMapper(p)
 
         cmds = mapper_1.arccommander_commands()
-        assert len(cmds) == 1
+        assert len(cmds) == 2
         expected = [
             "arc",
             "study",
@@ -102,7 +102,10 @@ class TestIsaStudyMapper(AbstractArcTest):
             "--authorlist",
             "Mueller M, Langer L L",
             "--title",
-            "HJKIH P9 orchestrates JKLKinase trafficking in mesenchymal cells.",
+            (
+                "HJKIH P9 orchestrates JKLKinase trafficking "
+                "in mesenchymal cells."
+            ),
             "--status",
             "published",
             "--statustermaccessionnumber",

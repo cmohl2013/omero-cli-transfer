@@ -13,8 +13,6 @@ from omero.rtypes import rstring
 
 from omero.testlib import ITest
 from mox3 import mox
-from omero_cli_transfer import TransferControl
-from omero.gateway import BlitzGateway
 
 
 class AbstractCLITest(ITest):

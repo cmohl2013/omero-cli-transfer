@@ -80,7 +80,8 @@ class AbstractIsaMapper:
                         values_to_set
                     )
             else:
-                # set annotation value if key is registered in config["default_values"]
+                # set annotation value if key is
+                # registered in config["default_values"]
                 for annotation in annotation_data:
                     for key in config["default_values"]:
                         value = annotation.get(key, None)
@@ -115,7 +116,7 @@ class AbstractIsaAssaySheetMapper:
 class IsaInvestigationMapper(AbstractIsaMapper):
     def __init__(self, ome_project):
         self.obj = ome_project
-        project_owner = ome_project.getOwner()
+        owner = ome_project.getOwner()
         # annotation
         self.isa_attribute_config = {
             "ontology_source_reference": {
@@ -148,14 +149,19 @@ class IsaInvestigationMapper(AbstractIsaMapper):
                 },
             },
             "publications": {
-                "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION PUBLICATIONS",
+                "namespace": (
+                    "ARC:ISA:INVESTIGATION:INVESTIGATION PUBLICATIONS"
+                ),
                 "default_values": {
                     "Investigation Publication DOI": None,
                     "Investigation Publication PubMed ID": None,
                     "Investigation Publication Author List": None,
                     "Investigation Publication Title": None,
                     "Investigation Publication Status": None,
-                    "Investigation Publication Status Term Accession Number": None,
+                    (
+                        "Investigation Publication Status "
+                        "Term Accession Number"
+                    ): None,
                     "Investigation Publication Status Term Source REF": None,
                 },
                 "command": [
@@ -170,16 +176,21 @@ class IsaInvestigationMapper(AbstractIsaMapper):
                     "Investigation Publication Author List": "--authorlist",
                     "Investigation Publication Title": "--title",
                     "Investigation Publication Status": "--status",
-                    "Investigation Publication Status Term Accession Number": "--statustermaccessionnumber",
-                    "Investigation Publication Status Term Source REF": "--statustermsourceref",
+                    (
+                        "Investigation Publication Status "
+                        "Term Accession Number"
+                    ): "--statustermaccessionnumber",
+                    (
+                        "Investigation Publication Status " "Term Source REF"
+                    ): "--statustermsourceref",
                 },
             },
             "contacts": {
                 "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION CONTACTS",
                 "default_values": {
-                    "Investigation Person Last Name": project_owner.getLastName(),
-                    "Investigation Person First Name": project_owner.getFirstName(),
-                    "Investigation Person Email": project_owner.getEmail(),
+                    "Investigation Person Last Name": owner.getLastName(),
+                    "Investigation Person First Name": owner.getFirstName(),
+                    "Investigation Person Email": owner.getEmail(),
                     "Investigation Person Phone": None,
                     "Investigation Person Fax": None,
                     "Investigation Person Address": None,
@@ -206,8 +217,12 @@ class IsaInvestigationMapper(AbstractIsaMapper):
                     "Investigation Person Affiliation": "--affiliation",
                     "Investigation Person orcid": "--orcid",
                     "Investigation Person Roles": "--roles",
-                    "Investigation Person Roles Term Accession Number": "--rolestermaccessionnumber",
-                    "Investigation Person Roles Term Source REF": "--rolestermsourceref",
+                    (
+                        "Investigation Person Roles " "Term Accession Number"
+                    ): "--rolestermaccessionnumber",
+                    (
+                        "Investigation Person Roles " "Term Source REF"
+                    ): "--rolestermsourceref",
                 },
             },
         }
@@ -221,7 +236,7 @@ class IsaStudyMapper(AbstractIsaMapper):
 
     def __init__(self, ome_project):
         self.obj = ome_project
-        project_owner = ome_project.getOwner()
+        owner = ome_project.getOwner()
         # annotation
         self.isa_attribute_config = {
             "metadata": {
@@ -269,8 +284,12 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Publication Author List": "--authorlist",
                     "Study Publication Title": "--title",
                     "Study Publication Status": "--status",
-                    "Study Publication Status Term Accession Number": "--statustermaccessionnumber",
-                    "Study Publication Status Term Source REF": "--statustermsourceref",
+                    "Study Publication Status Term Accession Number": (
+                        "--statustermaccessionnumber"
+                    ),
+                    "Study Publication Status Term Source REF": (
+                        "--statustermsourceref"
+                    ),
                 },
             },
             "design": {
@@ -278,7 +297,7 @@ class IsaStudyMapper(AbstractIsaMapper):
                 "default_values": {
                     "Study Design Type": None,
                     "Study Design Type Term Accession Number": None,
-                    "Study Design Type Term Accession Number": None,
+                    "Study Design Type Term Source REF": None,
                 },
                 "command": [
                     "arc",
@@ -290,8 +309,10 @@ class IsaStudyMapper(AbstractIsaMapper):
                 ],
                 "command_options": {
                     "Study Design Type": "--designtype",
-                    "Study Design Type Term Accession Number": "--typetermaccessionnumber",
-                    "Study Design Type Term Accession Number": "--typetermsourceref",
+                    "Study Design Type Term Accession Number": (
+                        "--typetermaccessionnumber"
+                    ),
+                    "Study Design Type Term Source REF": "--typetermsourceref",
                 },
             },
             "factors": {
@@ -300,7 +321,7 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Factor Name": None,
                     "Study Factor Type": None,
                     "Study Factor Type Term Accession Number": None,
-                    "Study Factor Type Term Accession Number": None,
+                    "Study Factor Type Term Source REF": None,
                 },
                 "command": [
                     "arc",
@@ -313,8 +334,10 @@ class IsaStudyMapper(AbstractIsaMapper):
                 "command_options": {
                     "Study Factor Name": "--name",
                     "Study Factor Type": "--factortype",
-                    "Study Factor Type Term Accession Number": "--typetermaccessionnumber",
-                    "Study Factor Type Term Accession Number": "--typetermsourceref",
+                    "Study Factor Type Term Accession Number": (
+                        "--typetermaccessionnumber"
+                    ),
+                    "Study Factor Type Term Source REF": "--typetermsourceref",
                 },
             },
             "protocols": {
@@ -332,7 +355,10 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Protocol Parameters Term Source REF": None,
                     "Study Protocol Components Name": None,
                     "Study Protocol Components Type": None,
-                    "Study Protocol Components Type Term Accession Number": None,
+                    (
+                        "Study Protocol Components "
+                        "Type Term Accession Number"
+                    ): None,
                     "Study Protocol Components Type Term Source REF": None,
                 },
                 "command": [
@@ -346,26 +372,38 @@ class IsaStudyMapper(AbstractIsaMapper):
                 "command_options": {
                     "Study Protocol Name": "--name",
                     "Study Protocol Type": "--protocoltype",
-                    "Study Protocol Type Term Accession Number": "--typetermaccessionnumber",
-                    "Study Protocol Type Term Source REF": "--typetermsourceref",
+                    "Study Protocol Type Term Accession Number": (
+                        "--typetermaccessionnumber"
+                    ),
+                    "Study Protocol Type Term Source REF": (
+                        "--typetermsourceref"
+                    ),
                     "Study Protocol Description": "--description",
                     "Study Protocol URI": "--uri",
                     "Study Protocol Version": "--version",
                     "Study Protocol Parameters Name": "--parametersname",
-                    "Study Protocol Parameters Term Accession Number": "--parameterstermaccessionnumber",
-                    "Study Protocol Parameters Term Source REF": "--parameterstermsourceref",
+                    "Study Protocol Parameters Term Accession Number": (
+                        "--parameterstermaccessionnumber"
+                    ),
+                    "Study Protocol Parameters Term Source REF": (
+                        "--parameterstermsourceref"
+                    ),
                     "Study Protocol Components Name": "--componentsname",
                     "Study Protocol Components Type": "--componentstype",
-                    "Study Protocol Components Type Term Accession Number": "--componentstypetermaccessionnumber",
-                    "Study Protocol Components Type Term Source REF": "--componentstypetermsourceref",
+                    "Study Protocol Components Type Term Accession Number": (
+                        "--componentstypetermaccessionnumber"
+                    ),
+                    "Study Protocol Components Type Term Source REF": (
+                        "--componentstypetermsourceref"
+                    ),
                 },
             },
             "contacts": {
                 "namespace": "ARC:ISA:STUDY:STUDY CONTACTS",
                 "default_values": {
-                    "Study Person Last Name": project_owner.getLastName(),
-                    "Study Person First Name": project_owner.getFirstName(),
-                    "Study Person Email": project_owner.getEmail(),
+                    "Study Person Last Name": owner.getLastName(),
+                    "Study Person First Name": owner.getFirstName(),
+                    "Study Person Email": owner.getEmail(),
                     "Study Person Phone": None,
                     "Study Person Fax": None,
                     "Study Person Address": None,
@@ -394,8 +432,12 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Person Affiliation": "--affiliation",
                     "Study Person orcid": "--orcid",
                     "Study Person Roles": "--roles",
-                    "Study Person Roles Term Accession Number": "--rolestermaccessionnumber",
-                    "Study Person Roles Term Source REF": "--rolestermsourceref",
+                    "Study Person Roles Term Accession Number": (
+                        "--rolestermaccessionnumber"
+                    ),
+                    "Study Person Roles Term Source REF": (
+                        "--rolestermsourceref"
+                    ),
                 },
             },
         }
@@ -439,12 +481,20 @@ class IsaAssayMapper(AbstractIsaMapper):
                     "Measurement Type": "--measurementtype",
                     # mixed up on purpose to deal with arc commander bug
                     # https://github.com/nfdi4plants/ARCCommander/issues/232
-                    "Measurement Type Term Accession Number": "--measurementtypetermsourceref",
-                    "Measurement Type Term Source REF": "--measurementtypetermaccessionnumber",
+                    "Measurement Type Term Accession Number": (
+                        "--measurementtypetermsourceref"
+                    ),
+                    "Measurement Type Term Source REF": (
+                        "--measurementtypetermaccessionnumber"
+                    ),
                     "Technology Type": "--technologytype",
                     # mixed up on purpose to deal with arc commander bug
-                    "Technology Type Term Accession Number": "--technologytypetermsourceref",
-                    "Technology Type Term Source Ref": "--technologytypetermaccessionnumber",
+                    "Technology Type Term Accession Number": (
+                        "--technologytypetermsourceref"
+                    ),
+                    "Technology Type Term Source Ref": (
+                        "--technologytypetermaccessionnumber"
+                    ),
                     "Technolology Platform": "--technologyplatform",
                 },
             },

@@ -33,8 +33,6 @@ class TestArcTransfer(AbstractArcTest):
         assert (path_to_arc / "studies").exists()
 
     def test_mito_data(self, tmp_path):
-        from pathlib import Path
-
         path_to_arc = tmp_path / "mito_arc"
         args = [
             "/home/christoph/miniconda3/envs/omcli/bin/omero",
@@ -50,9 +48,7 @@ class TestArcTransfer(AbstractArcTest):
             "Project:807",
             str(path_to_arc),
         ]
-        import subprocess
 
-        # subprocess.run(args)
         self.cli.invoke(args[1:])
 
     def test_annotation(self):

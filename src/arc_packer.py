@@ -64,9 +64,7 @@ class ArcPacker(object):
         self._create_study()
         self._create_assays()
         for assay_mapper in self.isa_assay_mappers:
-            assay_identifier = assay_mapper.isa_attributes_mapping[
-                "assayidentifier"
-            ]
+            assay_identifier = assay_mapper.assay_identifier()
             self._add_image_data_for_assay(assay_identifier)
             self._add_original_metadata_for_assay(assay_identifier)
         self._add_isa_assay_sheets()
@@ -88,11 +86,11 @@ class ArcPacker(object):
         for command in mapper.arccommander_commands():
             if len(command) > 0:
                 subprocess.run(command, cwd=self.path_to_arc_repo)
+        self.study_mapper = mapper
 
     def _create_assays(self):
         ome_project = self.obj
         project_id = ome_project.getId()
-        study_mapper = IsaStudyMapper(ome_project)
 
         def _filename_for_image(image_id):
             return self.image_filenames_mapping[f"Image:{image_id}"]
@@ -103,7 +101,7 @@ class ArcPacker(object):
         for dataset in ome_datasets:
             mapper = IsaAssayMapper(
                 dataset,
-                study_identifier=study_mapper.study_identifier(),
+                study_identifier=self.study_mapper.study_identifier(),
                 image_filename_getter=_filename_for_image,
             )
             self.isa_assay_mappers.append(mapper)
@@ -111,15 +109,6 @@ class ArcPacker(object):
                 if len(command) > 0:
                     subprocess.run(command, cwd=self.path_to_arc_repo)
 
-            # args = ["arc", "a", "add"]
-            # args.append("--studyidentifier")
-            # args.append(study_mapper.isa_attributes["identifier"])
-            # for isa_attribute in mapper.isa_attributes_mapping:
-            #     option = f"--{isa_attribute}"
-            #     value = mapper.isa_attributes_mapping[isa_attribute]
-            #     args.append(option)
-            #     args.append(value)
-            # subprocess.run(args, cwd=self.path_to_arc_repo)
             self.ome_dataset_for_isa_assay[mapper.assay_identifier()] = dataset
 
     def isa_assay_filename(self, assay_identifier):
@@ -161,7 +150,9 @@ class ArcPacker(object):
 
     def isa_assay_tables(self, assay_identifier):
         dataset = self.ome_dataset_for_isa_assay[assay_identifier]
-        assay_mapper = IsaAssayMapper(dataset, self.image_filename)
+        assay_mapper = IsaAssayMapper(
+            dataset, self.study_mapper.study_identifier(), self.image_filename
+        )
         tables = []
         images = self.conn.getObjects(
             "Image", opts={"dataset": dataset.getId()}

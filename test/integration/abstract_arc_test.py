@@ -132,9 +132,14 @@ class AbstractArcTest(AbstractCLITest):
         )
         annotations = {
             "Term Source Name": "SCoRO",
-            "Term Source File": "http://svn.code.sf.net/p/sempublishing/code/SCoRO/2017-09-04-SCoRO-1_9_1.owl",
+            "Term Source File": (
+                "http://svn.code.sf.net/p/sempublishing/"
+                "code/SCoRO/2017-09-04-SCoRO-1_9_1.owl"
+            ),
             "Term Source Version": "http://purl.org/spar/scoro/2017-09-04",
-            "Term Source Description": "SCoRO, the Scholarly Contributions and Roles Ontology",
+            "Term Source Description": (
+                "SCoRO, the Scholarly Contributions and Roles Ontology"
+            ),
         }
         self.create_mapped_annotation(
             name=annotation_namespace,
@@ -148,7 +153,9 @@ class AbstractArcTest(AbstractCLITest):
         )
         annotations = {
             "Term Source Name": "EFO",
-            "Term Source File": "http://www.ebi.ac.uk/efo/releases/v3.14.0/efo.owl",
+            "Term Source File": (
+                "http://www.ebi.ac.uk/efo/releases/v3.14.0/efo.owl"
+            ),
             "Term Source Description": "Experimental Factor Ontology",
         }
         self.create_mapped_annotation(
@@ -162,7 +169,9 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Investigation Identifier": "my-custom-investigation-id",
             "Investigation Title": "Mitochondria in HeLa Cells",
-            "Investigation Description": "Observation of MDV formation in Mitochondria",
+            "Investigation Description": (
+                "Observation of MDV formation in Mitochondria"
+            ),
             "Investigation Submission Date": "8/11/2022",
             "Investigation Public Release Date": "1/12/2022",
         }
@@ -179,7 +188,9 @@ class AbstractArcTest(AbstractCLITest):
             "Investigation Person First Name": "Arno",
             "Investigation Person Email": "arno.mueller@email.com",
             "Investigation Person Roles": "researcher",
-            "Investigation Person Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Investigation Person Roles Term Accession Number": (
+                "http://purl.org/spar/scoro/researcher"
+            ),
             "Investigation Person Roles Term Source REF": "SCoRO",
         }
         self.create_mapped_annotation(
@@ -196,9 +207,14 @@ class AbstractArcTest(AbstractCLITest):
             "Investigation Publication DOI": "10.1038/s41467-022-34205-9",
             "Investigation Publication PubMed ID": 678978,
             "Investigation Publication Author List": "Mueller M, Langer L L",
-            "Investigation Publication Title": "HJKIH P9 orchestrates JKLKinase trafficking in mesenchymal cells.",
+            "Investigation Publication Title": (
+                "HJKIH P9 orchestrates JKLKinase "
+                "trafficking in mesenchymal cells."
+            ),
             "Investigation Publication Status": "published",
-            "Investigation Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Investigation Publication Status Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Investigation Publication Status Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
@@ -228,9 +244,14 @@ class AbstractArcTest(AbstractCLITest):
             "Study Publication DOI": "10.1038/s41467-022-34205-9",
             "Study Publication PubMed ID": 678978,
             "Study Publication Author List": "Mueller M, Langer L L",
-            "Study Publication Title": "HJKIH P9 orchestrates JKLKinase trafficking in mesenchymal cells.",
+            "Study Publication Title": (
+                "HJKIH P9 orchestrates "
+                "JKLKinase trafficking in mesenchymal cells."
+            ),
             "Study Publication Status": "published",
-            "Study Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Publication Status Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Study Publication Status Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
@@ -244,9 +265,13 @@ class AbstractArcTest(AbstractCLITest):
             "Study Publication DOI": "10.567/s56878-890890-330-3",
             "Study Publication PubMed ID": 7898961,
             "Study Publication Author List": "Mueller M, Langer L L, Berg J",
-            "Study Publication Title": "HELk reformation in activated Hela Cells",
+            "Study Publication Title": (
+                "HELk reformation in activated Hela Cells"
+            ),
             "Study Publication Status": "published",
-            "Study Publication Status Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Publication Status Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Study Publication Status Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
@@ -259,8 +284,10 @@ class AbstractArcTest(AbstractCLITest):
         annotation_namespace = "ARC:ISA:STUDY:STUDY DESIGN DESCRIPTORS"
         annotations = {
             "Study Design Type": "Transmission Electron Microscopy",
-            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
-            "Study Design Type Term Accession Number": "EFO",
+            "Study Design Type Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
+            "Study Design Type Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
             name=annotation_namespace,
@@ -273,8 +300,10 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Factor Name": "My Factor",
             "Study Factor Type": "Factor for test reasons",
-            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
-            "Study Design Type Term Accession Number": "EFO",
+            "Study Design Type Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
+            "Study Design Type Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
             name=annotation_namespace,
@@ -287,7 +316,9 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Factor Name": "My Second Factor",
             "Study Factor Type": "Factor Number 2 for test reasons",
-            "Study Design Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Design Type Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Study Design Type Term Source REF": "EFO",
         }
         self.create_mapped_annotation(
@@ -301,17 +332,31 @@ class AbstractArcTest(AbstractCLITest):
         annotations = {
             "Study Protocol Name": "Cell embedding for electron microscopy",
             "Study Protocol Type": "Test Protocol Type",
-            "Study Protocol Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Protocol Type Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Study Protocol Type Term Source REF": "EFO",
             "Study Protocol Description": "A protocol for test reasons.",
-            "Study Protocol URI": "urn:oasis:names:specification:docbook:dtd:xml:4.1.2",
+            "Study Protocol URI": (
+                "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+            ),
             "Study Protocol Version": "0.0.1",
-            "Study Protocol Parameters Name": "temperature;glucose concentration",
-            "Study Protocol Parameters Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796;http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Protocol Parameters Name": (
+                "temperature;" "glucose concentration"
+            ),
+            "Study Protocol Parameters Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796;"
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Study Protocol Parameters Term Source REF": "EFO;EFO",
-            "Study Protocol Components Name": "SuperEmeddingMediumX;SuperEmeddingMediumY",
+            "Study Protocol Components Name": (
+                "SuperEmeddingMediumX;" "SuperEmeddingMediumY"
+            ),
             "Study Protocol Components Type": "reagent;reagent",
-            "Study Protocol Components Type Term Accession Number": "http://www.ebi.ac.uk/efo/EFO_0001796;http://www.ebi.ac.uk/efo/EFO_0001796",
+            "Study Protocol Components Type Term Accession Number": (
+                "http://www.ebi.ac.uk/efo/EFO_0001796;"
+                "http://www.ebi.ac.uk/efo/EFO_0001796"
+            ),
             "Study Protocol Components Type Term Source REF": "EFO;EFO",
         }
         self.create_mapped_annotation(
@@ -327,7 +372,9 @@ class AbstractArcTest(AbstractCLITest):
             "Study Person First Name": "Arno",
             "Study Person Email": "arno.mueller@email.com",
             "Study Person Roles": "researcher",
-            "Study Person Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Study Person Roles Term Accession Number": (
+                "http://purl.org/spar/scoro/researcher"
+            ),
             "Study Person Roles Term Source REF": "SCoRO",
         }
         self.create_mapped_annotation(
@@ -340,11 +387,17 @@ class AbstractArcTest(AbstractCLITest):
         annotation_namespace = "ARC:ISA:ASSAY:ASSAY METADATA"
         annotations = {
             "Assay Identifier": "my-custom-assay-id",
-            "Measurement Type": "High resolution transmission electron micrograph",
-            "Measurement Type Term Accession Number": "http://purl.obolibrary.org/obo/CHMO_0002125",
+            "Measurement Type": (
+                "High resolution transmission electron micrograph"
+            ),
+            "Measurement Type Term Accession Number": (
+                "http://purl.obolibrary.org/obo/CHMO_0002125"
+            ),
             "Measurement Type Term Source REF": "CHMO",
             "Technology Type": "transmission electron microscopy",
-            "Technology Type Term Accession Number": "http://www.bioassayontology.org/bao#BAO_0000455",
+            "Technology Type Term Accession Number": (
+                "http://www.bioassayontology.org/bao#BAO_0000455"
+            ),
             "Technology Type Term Source Ref": "BAO",
             "Technolology Platform": "JEOL JEM2100Plus",
         }
@@ -362,11 +415,13 @@ class AbstractArcTest(AbstractCLITest):
             "Email": "arno.mueller@email.com",
             "Phone": "+49 (0)221 12345",
             "Fax": "+49 (0)221 12347",
-            "Address": "Cologne University, Weyertal 1, 58321 Cologne, Germany",
+            "Address": "Cologne University, Cologne",
             "Affiliation": "Institute of Plant Science, Cologne University",
             "orcid": "789897890ß6",
             "Roles": "researcher",
-            "Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Roles Term Accession Number": (
+                "http://purl.org/spar/scoro/researcher"
+            ),
             "Roles Term Source REF": "SCoRO",
         }
         self.create_mapped_annotation(
@@ -384,7 +439,9 @@ class AbstractArcTest(AbstractCLITest):
             "Email": "laura.l.langer@email.com",
             "Phone": "0211-12345",
             "Roles": "researcher",
-            "Roles Term Accession Number": "http://purl.org/spar/scoro/researcher",
+            "Roles Term Accession Number": (
+                "http://purl.org/spar/scoro/researcher"
+            ),
             "Roles Term Source REF": "SCoRO",
         }
         self.create_mapped_annotation(
@@ -411,13 +468,13 @@ class AbstractArcTest(AbstractCLITest):
             "Source Name": 8894,
             "Protocol Type": "assay protocol",
             "TermSourceRef": "DPBO",
-            "TermAccesssionNumber": "https://purl.obolibrary.org/obo/DPBO_1000177",
+            "TermAccesssionNumber": (
+                "https://purl.obolibrary.org/obo/DPBO_1000177"
+            ),
             "ProtocolREF": "image_acquisition.md",
             "Parameter[OperationMode]": "IMAGING",
             "Parameter[IndicatedMagnification]": 10000,
             "Parameter[Voltage]": 80000,
-            "TermSourceRef": "UO",
-            "TermAcessionNumber": "http://purl.obolibrary.org/obo/UO_0000218",
             "Parameter[scanrate]": 1.13,
             "Unit": "nm",
         }
@@ -448,13 +505,13 @@ class AbstractArcTest(AbstractCLITest):
             "Source Name": 7777,
             "Protocol Type": "assay protocol",
             "TermSourceRef": "DPBO",
-            "TermAccesssionNumber": "https://purl.obolibrary.org/obo/DPBO_1000177",
+            "TermAccesssionNumber": (
+                "https://purl.obolibrary.org/obo/DPBO_1000177"
+            ),
             "ProtocolREF": "image_acquisition.md",
             "Parameter[OperationMode]": "IMAGING",
             "Parameter[IndicatedMagnification]": 5000,
             "Parameter[Voltage]": 60000,
-            "TermSourceRef": "UO",
-            "TermAcessionNumber": "http://purl.obolibrary.org/obo/UO_0000218",
             "Parameter[scanrate]": 1.17,
             "Unit": "nm",
         }
@@ -466,42 +523,6 @@ class AbstractArcTest(AbstractCLITest):
         )
 
         return self.gw.getObject("Project", project.id._val)
-
-    @pytest.fixture(scope="function")
-    def dataset_czi_1(self):
-        dataset = self.make_dataset(name="My Assay with CZI Images")
-
-        def _add_local_image_file(path_to_img_file):
-            assert path_to_img_file.exists()
-            target_str = f"Dataset:{dataset.id._val}"
-            self.import_image(
-                path_to_img_file, extra_args=["--target", target_str]
-            )
-
-        path_to_img_file = (
-            Path(__file__).parent.parent
-            / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
-        )
-        _add_local_image_file(path_to_img_file=path_to_img_file)
-
-        image_tif = self.create_test_image(
-            100,
-            100,
-            1,
-            1,
-            1,
-            self.client.getSession(),
-            name="another pixel image",
-        )
-        self.link(dataset, image_tif)
-
-        path_to_img_file = (
-            Path(__file__).parent.parent
-            / "data/arc_test_data/img_files/sted-confocal.lif"
-        )
-        _add_local_image_file(path_to_img_file=path_to_img_file)
-
-        return dataset
 
     @pytest.fixture(scope="function")
     def project_czi(self, dataset_czi_1, dataset_1):

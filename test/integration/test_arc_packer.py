@@ -328,9 +328,3 @@ class TestArcPacker(AbstractArcTest):
                 df = pd.read_excel(isa_assay_file, sheet_name=sheet_name)
                 assert not df.empty
         pass
-
-    def test_arc_packer_mappeda_annotations(
-        self, ds_with_arc_assay_annotation
-    ):
-        d = ds_with_arc_assay_annotation
-        pass
