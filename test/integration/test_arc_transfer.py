@@ -32,25 +32,6 @@ class TestArcTransfer(AbstractArcTest):
         assert (path_to_arc / "assays").exists()
         assert (path_to_arc / "studies").exists()
 
-    def test_mito_data(self, tmp_path):
-        path_to_arc = tmp_path / "mito_arc"
-        args = [
-            "/home/christoph/miniconda3/envs/omcli/bin/omero",
-            "--server",
-            "localhost",
-            "--user",
-            "root",
-            "--password",
-            "omero",
-            "transfer",
-            "pack",
-            "--arc",
-            "Project:807",
-            str(path_to_arc),
-        ]
-
-        self.cli.invoke(args[1:])
-
     def test_annotation(self):
         print(self.login_args())
 
