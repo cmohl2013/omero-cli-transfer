@@ -523,7 +523,7 @@ class IsaAssaySheetImageFilesMapper(AbstractIsaAssaySheetMapper):
             "Description": image.getDescription(),
             "Filename": self.image_filename_getter(
                 image.getId(), abspath=False
-            ),
+            ).name,
         }
         return isa_column_mapping
 

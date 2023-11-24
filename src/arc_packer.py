@@ -93,7 +93,7 @@ class ArcPacker(object):
         project_id = ome_project.getId()
 
         def _filename_for_image(image_id):
-            return self.image_filenames_mapping[f"Image:{image_id}"]
+            return self.image_filenames_mapping[f"Image:{image_id}"].name
 
         ome_datasets = self.conn.getObjects(
             "Dataset", opts={"project": project_id}
@@ -144,7 +144,7 @@ class ArcPacker(object):
             img_fileppath_rel = self.image_filename(
                 image.getId(), abspath=False
             )
-            target_path = dest_image_folder / img_fileppath_rel
+            target_path = dest_image_folder / img_fileppath_rel.name
             os.makedirs(target_path.parent, exist_ok=True)
             shutil.copy2(img_filepath_abs, target_path)
 

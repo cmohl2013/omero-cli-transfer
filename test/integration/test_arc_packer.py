@@ -254,7 +254,9 @@ class TestArcPacker(AbstractArcTest):
         ):
             relpath = ap.image_filename(image.getId(), abspath=False)
             abspath = (
-                tmp_path / "my_arc/assays/my-first-assay/dataset" / relpath
+                tmp_path
+                / "my_arc/assays/my-first-assay/dataset"
+                / relpath.name
             )
             assert abspath.exists()
 

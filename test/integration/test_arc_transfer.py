@@ -31,35 +31,3 @@ class TestArcTransfer(AbstractArcTest):
         assert path_to_arc.exists()
         assert (path_to_arc / "assays").exists()
         assert (path_to_arc / "studies").exists()
-
-    def test_annotation(self):
-        print(self.login_args())
-
-        dataset_1 = self.make_dataset(name="dataset_1")
-        self.create_mapped_annotation(
-            name="dataset_annotations",
-            map_values={"dataset_key1": 10, "dataset_key2": 20},
-            namespace="isa_specifiaction",
-            parent_object=dataset_1,
-        )
-
-        dataset_2 = self.make_dataset(name="dataset_2")
-        self.create_mapped_annotation(
-            name="dataset_annotations",
-            map_values={"dataset_key1": 100, "dataset_key2": 200},
-            namespace="isa_specifiaction",
-            parent_object=dataset_2,
-        )
-
-        project = self.make_project(name="project_1")
-        self.create_mapped_annotation(
-            name="project_annotations",
-            map_values={"project_key1": 100, "project_key2": 200},
-            namespace="isa_specifiaction",
-            parent_object=project,
-        )
-
-        self.link(project, dataset_1)
-        self.link(project, dataset_2)
-
-        pass
