@@ -31,11 +31,23 @@ but that will require locally building a wheel for `zeroc-ice` (which pip does a
 process that can be anything from "completely seamless and without issues" to "I need to install every 
 dependency ever imagined". Try at your own risk.
 
+
+## Optional RO-Crate export
+
 If you want optional RO-Crate exports, you can do 
 ```
 pip install omero-cli-transfer[rocrate]
 ```
 instead.
+
+## Optional ARC export
+
+If you want optional ARC repository export, install additional arc dependencies as follows:
+```
+pip install omero-cli-transfer[arc]
+```
+The ARC exporter uses the [ARCCommander](https://github.com/nfdi4plants/ARCCommander) CLI to create and manipulate ARC repositories. To make ARC export work, you have to install ARCCommander (including Git and Git LFS) following the instructions in the [ARCCommander Manual](https://nfdi4plants.github.io/nfdi4plants.knowledgebase/docs/ArcCommanderManual/).
+
 
 # Usage
 
@@ -57,6 +69,8 @@ Note that, if you are packing a `Plate` or `Screen`, default OMERO settings prev
 files in a single folder). A JSON metadata file is added with basic information
 about the files (name, mimetype).
 
+`--arc` creates an arc repository from scratch if specified path does not exist so far. Adds a new study to an existing arc specified by the path. ARC export works only with projects.
+
 `--simple` creates a "human-readable" package; one folder per project or dataset is created and image files are placed according to where they came from in the OMERO server. Note that a package generated with this option is not guaranteed to work with `unpack`, though it often will.
 
 `--metadata` allows you to specify which transfer metadata will be saved in `transfer.xml` as possible MapAnnotation values to the images. Defaults to image ID, timestamp, software version, source hostname, md5, source username, source group. 
@@ -67,6 +81,8 @@ omero transfer pack Image:123 transfer_pack.tar
 omero transfer pack --zip Image:123 transfer_pack.zip
 omero transfer pack Dataset:1111 /home/user/new_folder/new_pack.tar
 omero transfer pack 999 tarfile.tar  # equivalent to Project:999
+omero transfer pack --arc Project:999 path/to/my/new/arc_repo
+omero transfer pack --arc Project:123 path/to/my/already/existing/arc_repo
 ```
 
 ## `omero transfer unpack`
