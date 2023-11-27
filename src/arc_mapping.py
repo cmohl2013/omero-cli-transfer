@@ -33,9 +33,7 @@ class AbstractIsaMapper:
             for d in isa_attributes["values"]:
                 cmd = isa_attributes.get("command", []).copy()
                 for key in d:
-                    command_option = isa_attributes["command_options"].get(
-                        key, None
-                    )
+                    command_option = isa_attributes["command_options"].get(key, None)
                     if command_option is not None:
                         value = d[key]
                         cmd.append(command_option)
@@ -76,9 +74,7 @@ class AbstractIsaMapper:
                     if value is not None:
                         values_to_set[key] = value
                 if len(values_to_set) > 0:
-                    isa_attributes[annotation_type]["values"].append(
-                        values_to_set
-                    )
+                    isa_attributes[annotation_type]["values"].append(values_to_set)
             else:
                 # set annotation value if key is
                 # registered in config["default_values"]
@@ -119,17 +115,6 @@ class IsaInvestigationMapper(AbstractIsaMapper):
         owner = ome_project.getOwner()
         # annotation
         self.isa_attribute_config = {
-            "ontology_source_reference": {
-                "namespace": "ARC:ISA:INVESTIGATION:ONTOLOGY SOURCE REFERENCE",
-                "default_values": {
-                    "Term Source Name": None,
-                    "Term Source File": None,
-                    "Term Source Version": None,
-                    "Term Source Description": None,
-                },
-                "command": [],
-                "command_options": {},
-            },
             "investigation": {
                 "namespace": "ARC:ISA:INVESTIGATION:INVESTIGATION",
                 "default_values": {
@@ -149,19 +134,14 @@ class IsaInvestigationMapper(AbstractIsaMapper):
                 },
             },
             "publications": {
-                "namespace": (
-                    "ARC:ISA:INVESTIGATION:INVESTIGATION PUBLICATIONS"
-                ),
+                "namespace": ("ARC:ISA:INVESTIGATION:INVESTIGATION PUBLICATIONS"),
                 "default_values": {
                     "Investigation Publication DOI": None,
                     "Investigation Publication PubMed ID": None,
                     "Investigation Publication Author List": None,
                     "Investigation Publication Title": None,
                     "Investigation Publication Status": None,
-                    (
-                        "Investigation Publication Status "
-                        "Term Accession Number"
-                    ): None,
+                    ("Investigation Publication Status " "Term Accession Number"): None,
                     "Investigation Publication Status Term Source REF": None,
                 },
                 "command": [
@@ -177,8 +157,7 @@ class IsaInvestigationMapper(AbstractIsaMapper):
                     "Investigation Publication Title": "--title",
                     "Investigation Publication Status": "--status",
                     (
-                        "Investigation Publication Status "
-                        "Term Accession Number"
+                        "Investigation Publication Status " "Term Accession Number"
                     ): "--statustermaccessionnumber",
                     (
                         "Investigation Publication Status " "Term Source REF"
@@ -242,9 +221,7 @@ class IsaStudyMapper(AbstractIsaMapper):
             "metadata": {
                 "namespace": "ARC:ISA:STUDY:STUDY METADATA",
                 "default_values": {
-                    "Study Identifier": ome_project.getName()
-                    .lower()
-                    .replace(" ", "-"),
+                    "Study Identifier": ome_project.getName().lower().replace(" ", "-"),
                     "Study Title": ome_project.getName(),
                     "Study Description": ome_project.getDescription(),
                     "Study Submission Date": None,
@@ -355,10 +332,7 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Protocol Parameters Term Source REF": None,
                     "Study Protocol Components Name": None,
                     "Study Protocol Components Type": None,
-                    (
-                        "Study Protocol Components "
-                        "Type Term Accession Number"
-                    ): None,
+                    ("Study Protocol Components " "Type Term Accession Number"): None,
                     "Study Protocol Components Type Term Source REF": None,
                 },
                 "command": [
@@ -375,9 +349,7 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Protocol Type Term Accession Number": (
                         "--typetermaccessionnumber"
                     ),
-                    "Study Protocol Type Term Source REF": (
-                        "--typetermsourceref"
-                    ),
+                    "Study Protocol Type Term Source REF": ("--typetermsourceref"),
                     "Study Protocol Description": "--description",
                     "Study Protocol URI": "--uri",
                     "Study Protocol Version": "--version",
@@ -435,9 +407,7 @@ class IsaStudyMapper(AbstractIsaMapper):
                     "Study Person Roles Term Accession Number": (
                         "--rolestermaccessionnumber"
                     ),
-                    "Study Person Roles Term Source REF": (
-                        "--rolestermsourceref"
-                    ),
+                    "Study Person Roles Term Source REF": ("--rolestermsourceref"),
                 },
             },
         }
@@ -458,9 +428,7 @@ class IsaAssayMapper(AbstractIsaMapper):
             "metadata": {
                 "namespace": "ARC:ISA:ASSAY:ASSAY METADATA",
                 "default_values": {
-                    "Assay Identifier": ome_dataset.getName()
-                    .lower()
-                    .replace(" ", "-"),
+                    "Assay Identifier": ome_dataset.getName().lower().replace(" ", "-"),
                     "Measurement Type": None,
                     "Measurement Type Term Accession Number": None,
                     "Measurement Type Term Source REF": None,
@@ -501,9 +469,7 @@ class IsaAssayMapper(AbstractIsaMapper):
         }
         self._create_isa_attributes()
         self.isa_sheets = [
-            IsaAssaySheetImageFilesMapper(
-                ome_dataset, self.image_filename_getter
-            ),
+            IsaAssaySheetImageFilesMapper(ome_dataset, self.image_filename_getter),
             IsaAssaySheetImageMetadataMapper(ome_dataset),
         ]
 
@@ -521,9 +487,7 @@ class IsaAssaySheetImageFilesMapper(AbstractIsaAssaySheetMapper):
             "Image ID": image.getId(),
             "Name": image.getName(),
             "Description": image.getDescription(),
-            "Filename": self.image_filename_getter(
-                image.getId(), abspath=False
-            ).name,
+            "Filename": self.image_filename_getter(image.getId(), abspath=False).name,
         }
         return isa_column_mapping
 

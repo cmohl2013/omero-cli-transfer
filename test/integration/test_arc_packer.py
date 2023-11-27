@@ -1,11 +1,15 @@
 from abstract_arc_test import AbstractArcTest
-import pytest
 from omero_cli_transfer import ArcPacker
+from arc_packer import is_arc_repo
 import pandas as pd
 import numpy as np
 
 
 class TestArcPacker(AbstractArcTest):
+    def test_is_arc_repo(self, arc_repo_1, tmp_path):
+        assert not is_arc_repo(tmp_path)
+        assert is_arc_repo(arc_repo_1.path_to_arc_repo)
+
     def test_arc_packer_initialize(self, project_czi, tmp_path):
         path_to_arc_repo = tmp_path / "my_arc"
         ap = ArcPacker(
@@ -21,10 +25,7 @@ class TestArcPacker(AbstractArcTest):
             index_col=0,
         )
 
-        assert (
-            df.loc["Investigation Identifier"].iloc[0]
-            == "default-investigation-id"
-        )
+        assert df.loc["Investigation Identifier"].iloc[0] == "default-investigation-id"
         assert df.loc["Investigation Title"].iloc[0] is np.nan
 
     def test_arc_packer_initialize_with_annotations(
@@ -45,13 +46,9 @@ class TestArcPacker(AbstractArcTest):
         )
 
         assert (
-            df.loc["Investigation Identifier"].iloc[0]
-            == "my-custom-investigation-id"
+            df.loc["Investigation Identifier"].iloc[0] == "my-custom-investigation-id"
         )
-        assert (
-            df.loc["Investigation Title"].iloc[0]
-            == "Mitochondria in HeLa Cells"
-        )
+        assert df.loc["Investigation Title"].iloc[0] == "Mitochondria in HeLa Cells"
 
         assert df.loc["Investigation Person Last Name"].iloc[0] == "Mueller"
         assert (
@@ -73,9 +70,7 @@ class TestArcPacker(AbstractArcTest):
         ap._create_study()
 
         assert (path_to_arc_repo / "studies/my-first-study").exists()
-        assert (
-            path_to_arc_repo / "studies/my-first-study/isa.study.xlsx"
-        ).exists()
+        assert (path_to_arc_repo / "studies/my-first-study/isa.study.xlsx").exists()
 
         df = pd.read_excel(
             path_to_arc_repo / "studies/my-first-study/isa.study.xlsx",
@@ -103,9 +98,7 @@ class TestArcPacker(AbstractArcTest):
         ap._create_study()
 
         assert (path_to_arc_repo / "studies/my-custom-study-id").exists()
-        assert (
-            path_to_arc_repo / "studies/my-custom-study-id/isa.study.xlsx"
-        ).exists()
+        assert (path_to_arc_repo / "studies/my-custom-study-id/isa.study.xlsx").exists()
 
         df = pd.read_excel(
             path_to_arc_repo / "studies/my-custom-study-id/isa.study.xlsx",
@@ -139,14 +132,10 @@ class TestArcPacker(AbstractArcTest):
             "678978",
             "7898961",
         )
-        assert (
-            df.loc["Study Design Type"].iloc[0]
-            == "Transmission Electron Microscopy"
-        )
+        assert df.loc["Study Design Type"].iloc[0] == "Transmission Electron Microscopy"
 
         assert (
-            df.loc["Study Factor Name"].iloc[0]
-            != df.loc["Study Factor Name"].iloc[1]
+            df.loc["Study Factor Name"].iloc[0] != df.loc["Study Factor Name"].iloc[1]
         )
         assert df.loc["Study Factor Name"].iloc[0] in (
             "My Factor",
@@ -217,10 +206,7 @@ class TestArcPacker(AbstractArcTest):
             == "http://www.bioassayontology.org/bao#BAO_0000455"
         )
 
-        assert (
-            df.loc["Technology Type"].iloc[0]
-            == "transmission electron microscopy"
-        )
+        assert df.loc["Technology Type"].iloc[0] == "transmission electron microscopy"
         assert df.loc["Technology Platform"].iloc[0] == "JEOL JEM2100Plus"
 
     def test_arc_packer_add_image_data_for_assay(
@@ -244,63 +230,28 @@ class TestArcPacker(AbstractArcTest):
         ap._create_study()
         ap._create_assays()
         ap._add_image_data_for_assay(assay_identifier="my-first-assay")
-        ap._add_image_data_for_assay(
-            assay_identifier="my-assay-with-czi-images"
-        )
+        ap._add_image_data_for_assay(assay_identifier="my-assay-with-czi-images")
 
         dataset = ap.ome_dataset_for_isa_assay["my-first-assay"]
-        for image in self.gw.getObjects(
-            "Image", opts={"dataset": dataset.getId()}
-        ):
+        for image in self.gw.getObjects("Image", opts={"dataset": dataset.getId()}):
             relpath = ap.image_filename(image.getId(), abspath=False)
-            abspath = (
-                tmp_path
-                / "my_arc/assays/my-first-assay/dataset"
-                / relpath.name
-            )
+            abspath = tmp_path / "my_arc/assays/my-first-assay/dataset" / relpath.name
             assert abspath.exists()
-
-    @pytest.fixture()
-    def arc_repo_1(
-        self,
-        project_czi,
-        omero_data_czi_image_filenames_mapping,
-        path_omero_data_czi,
-        tmp_path,
-    ):
-        path_to_arc_repo = tmp_path / "my_arc"
-
-        ap = ArcPacker(
-            ome_object=project_czi,
-            path_to_arc_repo=path_to_arc_repo,
-            path_to_image_files=path_omero_data_czi,
-            image_filenames_mapping=omero_data_czi_image_filenames_mapping,
-            conn=self.gw,
-        )
-
-        ap.create_arc_repo()
-        return ap
 
     def test_original_metadata(self, arc_repo_1, project_czi):
         ap = arc_repo_1
 
         # ap._add_original_metadata()
-        datasets = self.gw.getObjects(
-            "Dataset", opts={"project": project_czi.getId()}
-        )
+        datasets = self.gw.getObjects("Dataset", opts={"project": project_czi.getId()})
 
         for dataset in datasets:
             folder = (
                 ap.path_to_arc_repo
                 / f"assays/{dataset.name.lower().replace(' ','-')}/protocols"
             )
-            images = self.gw.getObjects(
-                "Image", opts={"dataset": dataset.getId()}
-            )
+            images = self.gw.getObjects("Image", opts={"dataset": dataset.getId()})
             for image in images:
-                metadata_filepath = (
-                    folder / f"ImageID{image.getId()}_metadata.json"
-                )
+                metadata_filepath = folder / f"ImageID{image.getId()}_metadata.json"
                 print(metadata_filepath)
                 assert metadata_filepath.exists()
 
@@ -323,8 +274,7 @@ class TestArcPacker(AbstractArcTest):
 
         for assay_identifier in ["my-assay-with-czi-images", "my-first-assay"]:
             isa_assay_file = (
-                ap.path_to_arc_repo
-                / f"assays/{assay_identifier}/isa.assay.xlsx"
+                ap.path_to_arc_repo / f"assays/{assay_identifier}/isa.assay.xlsx"
             )
             for sheet_name in ["Image Files", "Image Metadata"]:
                 df = pd.read_excel(isa_assay_file, sheet_name=sheet_name)

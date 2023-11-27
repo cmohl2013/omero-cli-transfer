@@ -25,7 +25,7 @@ from generate_xml import populate_xml, populate_tsv, populate_rocrate
 from generate_xml import populate_xml_folder
 from generate_omero_objects import populate_omero
 
-from arc_packer import ArcPacker
+from arc_packer import ArcPacker, is_arc_repo
 
 import ezomero
 from ome_types.model import CommentAnnotation, OME
@@ -336,9 +336,7 @@ class TransferControl(GraphControl):
                 mrepos.append(path)
         return mrepos
 
-    def _copy_files(
-        self, id_list: Dict[str, Any], folder: str, conn: BlitzGateway
-    ):
+    def _copy_files(self, id_list: Dict[str, Any], folder: str, conn: BlitzGateway):
         if not isinstance(id_list, dict):
             raise TypeError("id_list must be a dict")
         if not all(isinstance(item, str) for item in id_list.keys()):
@@ -410,14 +408,10 @@ class TransferControl(GraphControl):
             metadata = list(set(metadata))
         self.metadata = metadata
 
-    def _fix_pixels_image_simple(
-        self, ome: OME, folder: str, filepath: str
-    ) -> OME:
+    def _fix_pixels_image_simple(self, ome: OME, folder: str, filepath: str) -> OME:
         newome = copy.deepcopy(ome)
         for ann in ome.structured_annotations:
-            if isinstance(ann.value, str) and ann.value.startswith(
-                "pixel_images"
-            ):
+            if isinstance(ann.value, str) and ann.value.startswith("pixel_images"):
                 for img in newome.images:
                     for ref in img.annotation_refs:
                         if ref.id == ann.id:
@@ -458,8 +452,7 @@ class TransferControl(GraphControl):
         if isinstance(args.object, Plate) or isinstance(args.object, Screen):
             if args.rocrate:
                 raise ValueError(
-                    "Single image, plate or screen cannot be "
-                    "packaged in a RO-Crate"
+                    "Single image, plate or screen cannot be " "packaged in a RO-Crate"
                 )
             if args.simple:
                 raise ValueError(
@@ -468,9 +461,7 @@ class TransferControl(GraphControl):
                 )
 
         if args.arc and not isinstance(args.object, Project):
-            raise ValueError(
-                "Only projects can be packaged as ARC repository."
-            )
+            raise ValueError("Only projects can be packaged as ARC repository.")
 
         if isinstance(args.object, Image):
             src_datatype, src_dataid = "Image", args.object.id
@@ -497,8 +488,7 @@ class TransferControl(GraphControl):
         obj = self.gateway.getObject(src_datatype, src_dataid)
         if obj is None:
             raise ValueError(
-                "Object not found or outside current"
-                " permissions for current user."
+                "Object not found or outside current" " permissions for current user."
             )
         print("Populating xml...")
         tar_path = Path(args.filepath)
@@ -541,20 +531,29 @@ class TransferControl(GraphControl):
         if args.arc:
             print(f"Creating or updating ARC repository at {folder}")
 
+            path_to_arc_repo = Path(tar_path)
             arc_packer = ArcPacker(
                 ome_object=obj,
-                path_to_arc_repo=Path(tar_path),
+                path_to_arc_repo=path_to_arc_repo,
                 image_filenames_mapping=path_id_dict,
                 path_to_image_files=Path(folder),
                 conn=self.gateway,
             )
 
-            arc_packer.create_arc_repo()
+            if is_arc_repo(path_to_arc_repo):
+                arc_packer.add_data_to_arc_repo()
+            elif not path_to_arc_repo.exists():
+                arc_packer.create_arc_repo()
+            else:
+                print(
+                    f"Could not create ARC at {path_to_arc_repo}. "
+                    "Either specifiy a not existing directory "
+                    "to build a new ARC or specify a path to an "
+                    "existing ARC repository."
+                )
 
         else:
-            self._package_files(
-                os.path.splitext(tar_path)[0], args.zip, folder
-            )
+            self._package_files(os.path.splitext(tar_path)[0], args.zip, folder)
         print("Cleaning up...")
         shutil.rmtree(folder)
         return
@@ -564,9 +563,7 @@ class TransferControl(GraphControl):
         self._process_metadata(args.metadata)
         if not args.folder:
             print(f"Unzipping {args.filepath}...")
-            hash, ome, folder = self._load_from_pack(
-                args.filepath, args.output
-            )
+            hash, ome, folder = self._load_from_pack(args.filepath, args.output)
         else:
             folder = Path(args.filepath)
             ome = from_xml(folder / "transfer.xml")
@@ -631,9 +628,7 @@ class TransferControl(GraphControl):
         ome = from_xml(folder / "transfer.xml")
         return hash, ome, folder
 
-    def _create_image_map(
-        self, ome: OME
-    ) -> Tuple[OME, DefaultDict, List[str]]:
+    def _create_image_map(self, ome: OME) -> Tuple[OME, DefaultDict, List[str]]:
         if not (type(ome) is OME):
             raise TypeError("XML is not valid OME format")
         img_map = DefaultDict(list)
@@ -648,9 +643,7 @@ class TransferControl(GraphControl):
             ):
                 if ann.namespace.split(":")[0] == "Image":
                     map_ref_ids.append(ann.id)
-                    img_map[ann.value].append(
-                        int(ann.namespace.split(":")[-1])
-                    )
+                    img_map[ann.value].append(int(ann.namespace.split(":")[-1]))
                     if ann.value.endswith("mock_folder"):
                         filelist.append(ann.value.rstrip("mock_folder"))
                     else:
@@ -661,9 +654,7 @@ class TransferControl(GraphControl):
                 if ref.id in map_ref_ids:
                     i.annotation_refs.remove(ref)
         filelist = list(set(filelist))
-        img_map = DefaultDict(
-            list, {x: sorted(img_map[x]) for x in img_map.keys()}
-        )
+        img_map = DefaultDict(list, {x: sorted(img_map[x]) for x in img_map.keys()})
         return newome, img_map, filelist
 
     def _import_files(
@@ -731,10 +722,7 @@ class TransferControl(GraphControl):
                 is_annotated = False
                 for ann in anns:
                     ann_content = conn.getObject("MapAnnotation", ann)
-                    if (
-                        ann_content.getNs()
-                        == "openmicroscopy.org/cli/transfer"
-                    ):
+                    if ann_content.getNs() == "openmicroscopy.org/cli/transfer":
                         is_annotated = True
                 if not is_annotated:
                     image_ids.append(img_id)
@@ -760,9 +748,7 @@ class TransferControl(GraphControl):
         for k, v in dest_map.items():
             newkey = k.split("/./")[-1]
             dest_dict[newkey].extend(v)
-        src_dict = DefaultDict(
-            list, {x: sorted(src_dict[x]) for x in src_dict.keys()}
-        )
+        src_dict = DefaultDict(list, {x: sorted(src_dict[x]) for x in src_dict.keys()})
         dest_dict = DefaultDict(
             list, {x: sorted(dest_dict[x]) for x in dest_dict.keys()}
         )
@@ -779,9 +765,7 @@ class TransferControl(GraphControl):
                         anns = 0
                         for j in img_obj.listAnnotations():
                             ns = j.getNs()
-                            if ns.startswith(
-                                "openmicroscopy.org/cli/transfer"
-                            ):
+                            if ns.startswith("openmicroscopy.org/cli/transfer"):
                                 anns += 1
                         if not anns:
                             clean_dest.append(i)
@@ -792,9 +776,7 @@ class TransferControl(GraphControl):
         return imgmap
 
     def __prepare(self, args):
-        populate_xml_folder(
-            args.folder, args.filelist, self.gateway, self.session
-        )
+        populate_xml_folder(args.folder, args.filelist, self.gateway, self.session)
         return
 
 

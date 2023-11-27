@@ -31,3 +31,27 @@ class TestArcTransfer(AbstractArcTest):
         assert path_to_arc.exists()
         assert (path_to_arc / "assays").exists()
         assert (path_to_arc / "studies").exists()
+
+    def test_pack_arc_existing_repo(self, arc_repo_1, project_2):
+        project_identifier = f"Project:{project_2.getId()}"
+        path_to_arc = arc_repo_1.path_to_arc_repo
+
+        assert path_to_arc.exists()
+
+        assert (path_to_arc / "studies/my-study-with-a-czi-image").exists()
+        assert (path_to_arc / "assays/my-first-assay").exists()
+        assert not (path_to_arc / "assays/my-second-assay").exists()
+        assert not (path_to_arc / "studies/my-second-study").exists()
+
+        args = self.args + [
+            "pack",
+            "--arc",
+            project_identifier,
+            str(path_to_arc),
+        ]
+        self.cli.invoke(args)
+
+        assert (path_to_arc / "studies/my-study-with-a-czi-image").exists()
+        assert (path_to_arc / "assays/my-first-assay").exists()
+        assert (path_to_arc / "assays/my-second-assay").exists()
+        assert (path_to_arc / "studies/my-second-study").exists()
