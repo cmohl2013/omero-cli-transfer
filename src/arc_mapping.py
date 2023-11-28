@@ -21,7 +21,7 @@ class AbstractIsaMapper:
         namespace = self.isa_attribute_config[annotation_type]["namespace"]
         annotation_data = []
         for annotation in self._all_annotatation_objects():
-            if annotation.getName() == namespace:
+            if annotation.getNs() == namespace:
                 annotation_data.append(dict(annotation.getValue()))
         return annotation_data
 
@@ -419,10 +419,14 @@ class IsaAssayMapper(AbstractIsaMapper):
     def assay_identifier(self):
         return self.isa_attributes["metadata"]["values"][0]["Assay Identifier"]
 
+    def study_identifier(self):
+        return self.isa_attributes["metadata"]["values"][0]["Study Identifier"]
+
     def __init__(self, ome_dataset, study_identifier, image_filename_getter):
         self.image_filename_getter = image_filename_getter
 
         self.obj = ome_dataset
+        owner = ome_dataset.getOwner()
 
         self.isa_attribute_config = {
             "metadata": {
@@ -464,6 +468,44 @@ class IsaAssayMapper(AbstractIsaMapper):
                         "--technologytypetermaccessionnumber"
                     ),
                     "Technolology Platform": "--technologyplatform",
+                },
+            },
+            "contacts": {
+                "namespace": "ARC:ISA:ASSAY:ASSAY PERFORMERS",
+                "default_values": {
+                    "Last Name": owner.getLastName(),
+                    "First Name": owner.getFirstName(),
+                    "Email": owner.getEmail(),
+                    "Phone": None,
+                    "Fax": None,
+                    "Address": None,
+                    "Affiliation": None,
+                    "orcid": None,
+                    "Roles": None,
+                    "Roles Term Accession Number": None,
+                    "Roles Term Source REF": None,
+                },
+                "command": [
+                    "arc",
+                    "assay",
+                    "person",
+                    "register",
+                    "--assayidentifier",
+                    self.assay_identifier,
+                ],
+                "command_options": {
+                    "Last Name": "--lastname",
+                    "First Name": "--firstname",
+                    "Mid Initials": "--midinitials",
+                    "Email": "--email",
+                    "Phone": "--phone",
+                    "Fax": "--fax",
+                    "Address": "--address",
+                    "Affiliation": "--affiliation",
+                    "orcid": "--orcid",
+                    "Roles": "--roles",
+                    "Roles " "Term Accession Number": "--rolestermaccessionnumber",
+                    "Roles " "Term Source REF": "--rolestermsourceref",
                 },
             },
         }

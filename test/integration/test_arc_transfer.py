@@ -5,7 +5,7 @@ import pytest
 class TestArcTransfer(AbstractArcTest):
     def test_pack_arc_fails_for_dataset(self, dataset_1, tmp_path):
         # only projects can be packed as arc
-        dataset_identifier = f"Dataset:{dataset_1.id._val}"
+        dataset_identifier = f"Dataset:{dataset_1.id}"
         path_to_arc = tmp_path / "my_arc"
         args = self.args + [
             "pack",

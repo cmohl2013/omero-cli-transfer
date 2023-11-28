@@ -52,6 +52,19 @@ class AbstractArcTest(AbstractCLITest):
             )
             self.link(dataset_1, image)
 
+        return self.gw.getObject("Dataset", dataset_1.id._val)
+
+    @pytest.fixture(scope="function")
+    def dataset_1_obj(self):
+        dataset_1 = self.make_dataset(name="My First Assay")
+
+        for i in range(3):
+            img_name = f"assay 2 image {i}"
+            image = self.create_test_image(
+                80, 40, 3, 4, 2, self.client.getSession(), name=img_name
+            )
+            self.link(dataset_1, image)
+
         return dataset_1
 
     @pytest.fixture(scope="function")
@@ -119,10 +132,156 @@ class AbstractArcTest(AbstractCLITest):
         return dataset
 
     @pytest.fixture(scope="function")
-    def project_with_arc_assay_annotation(self):
-        project = self.make_project(name="My Study with Annotations")
+    def dataset_with_arc_assay_annotation(self):
         dataset = self.make_dataset(name="My Assay with Annotations")
-        self.link(project, dataset)
+
+        annotation_namespace = "ARC:ISA:ASSAY:ASSAY METADATA"
+        annotations = {
+            "Assay Identifier": "my-custom-assay-id",
+            "Measurement Type": ("High resolution transmission electron micrograph"),
+            "Measurement Type Term Accession Number": (
+                "http://purl.obolibrary.org/obo/CHMO_0002125"
+            ),
+            "Measurement Type Term Source REF": "CHMO",
+            "Technology Type": "transmission electron microscopy",
+            "Technology Type Term Accession Number": (
+                "http://www.bioassayontology.org/bao#BAO_0000455"
+            ),
+            "Technology Type Term Source Ref": "BAO",
+            "Technolology Platform": "JEOL JEM2100Plus",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=dataset,
+        )
+
+        annotation_namespace = "ARC:ISA:ASSAY:ASSAY PERFORMERS"
+        annotations = {
+            "Last Name": "Doe",
+            "First Name": "John",
+            "Email": "john.doe@email.com",
+            "Phone": "+49 (0)221 12345",
+            "Fax": "+49 (0)221 12347",
+            "Address": "Cologne University, Cologne",
+            "Affiliation": "Institute of Plant Science, Cologne University",
+            "orcid": "789897890ß6",
+            "Roles": "researcher",
+            "Roles Term Accession Number": ("http://purl.org/spar/scoro/researcher"),
+            "Roles Term Source REF": "SCoRO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=dataset,
+        )
+
+        annotation_namespace = "ARC:ISA:ASSAY:ASSAY PERFORMERS"
+        annotations = {
+            "Last Name": "Laura",
+            "First Name": "Langer",
+            "Mid Initials": "L",
+            "Email": "laura.l.langer@email.com",
+            "Phone": "0211-12345",
+            "Roles": "researcher",
+            "Roles Term Accession Number": ("http://purl.org/spar/scoro/researcher"),
+            "Roles Term Source REF": "SCoRO",
+        }
+        self.create_mapped_annotation(
+            name=annotation_namespace,
+            map_values=annotations,
+            namespace=annotation_namespace,
+            parent_object=dataset,
+        )
+
+        # image 1
+        image_tif = self.create_test_image(
+            100,
+            100,
+            1,
+            1,
+            1,
+            self.client.getSession(),
+            name="pixel image 1",
+        )
+        self.link(dataset, image_tif)
+
+        # annotation_namespace = "ARC:ISA:ASSAY:my-assay-with-annotations"
+        # annotations = {
+        #     "Source Name": 8894,
+        #     "Protocol Type": "assay protocol",
+        #     "Term Source Ref": "DPBO",
+        #     "Term Accesssion Number": ("https://purl.obolibrary.org/obo/DPBO_1000177"),
+        #     "Protocol REF": "image_acquisition.md",
+        #     "Parameter[OperationMode]": "IMAGING",
+        #     "Parameter[IndicatedMagnification]": 10000,
+        #     "Parameter[Voltage]": 80000,
+        #     "Parameter[scanrate]": 1.13,
+        #     "Unit": "nm",
+        # }
+        # self.create_mapped_annotation(
+        #     name=annotation_namespace,
+        #     map_values=annotations,
+        #     namespace=annotation_namespace,
+        #     parent_object=image_tif,
+        # )
+
+        def _add_local_image_file(path_to_img_file):
+            assert path_to_img_file.exists()
+            target_str = f"Dataset:{dataset.id._val}"
+            pix_ids = self.import_image(
+                path_to_img_file, extra_args=["--target", target_str]
+            )
+            return pix_ids
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
+        )
+        pix_ids = _add_local_image_file(path_to_img_file=path_to_img_file)
+        # image_czi = self.gw.getObject("Image", int(pix_ids[0]))
+
+        # annotation_namespace = "ARC:ISA:ASSAY:my-assay-with-annotations"
+        # annotations = {
+        #     "Source Name": 7777,
+        #     "Protocol Type": "assay protocol",
+        #     "Term Source Ref": "DPBO",
+        #     "TermA ccesssion Number": ("https://purl.obolibrary.org/obo/DPBO_1000177"),
+        #     "Protocol REF": "image_acquisition.md",
+        #     "Parameter[OperationMode]": "IMAGING",
+        #     "Parameter[IndicatedMagnification]": 5000,
+        #     "Parameter[Voltage]": 60000,
+        #     "Parameter[scanrate]": 1.17,
+        #     "Unit": "nm",
+        # }
+        # self.create_mapped_annotation(
+        #     name=annotation_namespace,
+        #     map_values=annotations,
+        #     namespace=annotation_namespace,
+        #     parent_object=image_czi,
+        # )
+
+        path_to_img_file = (
+            Path(__file__).parent.parent
+            / "data/arc_test_data/img_files/sted-confocal.lif"
+        )
+        _add_local_image_file(path_to_img_file=path_to_img_file)
+
+        return dataset
+
+    @pytest.fixture(scope="function")
+    def dataset_with_arc_assay_annotation_obj(self, dataset_with_arc_assay_annotation):
+        return self.gw.getObject("Dataset", dataset_with_arc_assay_annotation.id._val)
+
+    @pytest.fixture(scope="function")
+    def project_with_arc_assay_annotation(
+        self, dataset_1, dataset_with_arc_assay_annotation
+    ):
+        project = self.make_project(name="My Study with Annotations")
+        self.link(project, dataset_1)
+        self.link(project, dataset_with_arc_assay_annotation)
 
         annotation_namespace = "These Values are not relevant for ARCs"
         annotations = {"color 1": "red", "color 2": "blue"}
@@ -355,134 +514,6 @@ class AbstractArcTest(AbstractCLITest):
             map_values=annotations,
             namespace=annotation_namespace,
             parent_object=project,
-        )
-
-        annotation_namespace = "ARC:ISA:ASSAY:ASSAY METADATA"
-        annotations = {
-            "Assay Identifier": "my-custom-assay-id",
-            "Measurement Type": ("High resolution transmission electron micrograph"),
-            "Measurement Type Term Accession Number": (
-                "http://purl.obolibrary.org/obo/CHMO_0002125"
-            ),
-            "Measurement Type Term Source REF": "CHMO",
-            "Technology Type": "transmission electron microscopy",
-            "Technology Type Term Accession Number": (
-                "http://www.bioassayontology.org/bao#BAO_0000455"
-            ),
-            "Technology Type Term Source Ref": "BAO",
-            "Technolology Platform": "JEOL JEM2100Plus",
-        }
-        self.create_mapped_annotation(
-            name=annotation_namespace,
-            map_values=annotations,
-            namespace=annotation_namespace,
-            parent_object=dataset,
-        )
-
-        annotation_namespace = "ARC:ISA:ASSAY:ASSAY PERFORMERS"
-        annotations = {
-            "Last Name": "Arno",
-            "First Name": "Mueller",
-            "Email": "arno.mueller@email.com",
-            "Phone": "+49 (0)221 12345",
-            "Fax": "+49 (0)221 12347",
-            "Address": "Cologne University, Cologne",
-            "Affiliation": "Institute of Plant Science, Cologne University",
-            "orcid": "789897890ß6",
-            "Roles": "researcher",
-            "Roles Term Accession Number": ("http://purl.org/spar/scoro/researcher"),
-            "Roles Term Source REF": "SCoRO",
-        }
-        self.create_mapped_annotation(
-            name=annotation_namespace,
-            map_values=annotations,
-            namespace=annotation_namespace,
-            parent_object=dataset,
-        )
-
-        annotation_namespace = "ARC:ISA:ASSAY:ASSAY PERFORMERS"
-        annotations = {
-            "Last Name": "Laura",
-            "First Name": "Langer",
-            "Mid Initials": "L",
-            "Email": "laura.l.langer@email.com",
-            "Phone": "0211-12345",
-            "Roles": "researcher",
-            "Roles Term Accession Number": ("http://purl.org/spar/scoro/researcher"),
-            "Roles Term Source REF": "SCoRO",
-        }
-        self.create_mapped_annotation(
-            name=annotation_namespace,
-            map_values=annotations,
-            namespace=annotation_namespace,
-            parent_object=dataset,
-        )
-
-        # image 1
-        image_tif = self.create_test_image(
-            100,
-            100,
-            1,
-            1,
-            1,
-            self.client.getSession(),
-            name="pixel image 1",
-        )
-        self.link(dataset, image_tif)
-
-        annotation_namespace = "ARC:ISA:ASSAY:my-assay-with-annotations"
-        annotations = {
-            "Source Name": 8894,
-            "Protocol Type": "assay protocol",
-            "TermSourceRef": "DPBO",
-            "TermAccesssionNumber": ("https://purl.obolibrary.org/obo/DPBO_1000177"),
-            "ProtocolREF": "image_acquisition.md",
-            "Parameter[OperationMode]": "IMAGING",
-            "Parameter[IndicatedMagnification]": 10000,
-            "Parameter[Voltage]": 80000,
-            "Parameter[scanrate]": 1.13,
-            "Unit": "nm",
-        }
-        self.create_mapped_annotation(
-            name=annotation_namespace,
-            map_values=annotations,
-            namespace=annotation_namespace,
-            parent_object=image_tif,
-        )
-
-        def _add_local_image_file(path_to_img_file):
-            assert path_to_img_file.exists()
-            target_str = f"Dataset:{dataset.id._val}"
-            pix_ids = self.import_image(
-                path_to_img_file, extra_args=["--target", target_str]
-            )
-            return pix_ids
-
-        path_to_img_file = (
-            Path(__file__).parent.parent
-            / "data/arc_test_data/img_files/CD_s_1_t_3_c_2_z_5.czi"
-        )
-        pix_ids = _add_local_image_file(path_to_img_file=path_to_img_file)
-        image_czi = self.gw.getObject("Image", int(pix_ids[0]))
-
-        annotation_namespace = "ARC:ISA:ASSAY:my-assay-with-annotations"
-        annotations = {
-            "Source Name": 7777,
-            "Protocol Type": "assay protocol",
-            "TermSourceRef": "DPBO",
-            "TermAccesssionNumber": ("https://purl.obolibrary.org/obo/DPBO_1000177"),
-            "ProtocolREF": "image_acquisition.md",
-            "Parameter[OperationMode]": "IMAGING",
-            "Parameter[IndicatedMagnification]": 5000,
-            "Parameter[Voltage]": 60000,
-            "Parameter[scanrate]": 1.17,
-            "Unit": "nm",
-        }
-        self.create_mapped_annotation(
-            name=annotation_namespace,
-            map_values=annotations,
-            namespace=annotation_namespace,
-            parent_object=image_czi,
         )
 
         return self.gw.getObject("Project", project.id._val)
